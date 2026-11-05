@@ -8,7 +8,7 @@
 <title>Exam Ready</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -17,30 +17,21 @@
 <style>
 /* Layout: a study web app — marketing home page, then an app shell with a left sidebar (bottom tab bar on phones); each study set opens into tool tabs. Engineering-pad grid paper, ink-blue type, highlighter yellow for what matters. */
 :root{
-  --paper:#f4f7fb; --grid:#e3e9f3; --sheet:#ffffff; --ink:#14223a; --ink-2:#4a5a74; --ink-3:#7d8aa1;
-  --line:#d8dfea; --accent:#2346c7; --accent-ink:#ffffff; --accent-soft:#e7edff;
-  --mark:#ffe45c; --mark-ink:#3b3300;
-  --good:#17804a; --good-soft:#dff3e8; --warn:#b26a00; --warn-soft:#fff0d6; --bad:#c2312b; --bad-soft:#fde4e2;
-  --f1:#2346c7; --f2:#17804a; --f3:#c2312b; --f4:#b26a00; --f5:#7a3fc2; --f6:#0e7f8c;
-  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  /* Dark, glowing study space: near-black base, violet-to-indigo glow, white type */
+  --paper:#07080f; --grid:rgba(255,255,255,.07); --sheet:#0f1120; --sheet-2:#151834; --ink:#eef0ff; --ink-2:#a6abc8; --ink-3:#6d7294;
+  --line:rgba(255,255,255,.09); --accent:#a78bfa; --accent-2:#6366f1; --accent-ink:#ffffff; --accent-soft:rgba(139,92,246,.16);
+  --mark:rgba(139,92,246,.30); --mark-ink:#ece6ff; --cyan:#67e8f9;
+  --good:#34d399; --good-soft:rgba(52,211,153,.14); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.13); --bad:#f87171; --bad-soft:rgba(248,113,113,.14);
+  --f1:#a78bfa; --f2:#34d399; --f3:#f87171; --f4:#fbbf24; --f5:#f472b6; --f6:#67e8f9;
+  --grad:linear-gradient(135deg,#8b5cf6 0%,#6366f1 55%,#3b82f6 100%);
+  --grad-text:linear-gradient(90deg,#c4b5fd 0%,#a5b4fc 45%,#67e8f9 100%);
+  --glow:0 0 0 1px rgba(167,139,250,.35),0 12px 40px -12px rgba(139,92,246,.65);
+  --f-display:"Sora", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Manrope", "Segoe UI", system-ui, sans-serif;
   --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --r:12px; --side:236px;
+  --r:14px; --side:240px;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --paper:#0f1522; --grid:#18212f; --sheet:#151d2c; --ink:#e7edf7; --ink-2:#a9b5c9; --ink-3:#7b879c;
-  --line:#26324a; --accent:#7f9bff; --accent-ink:#0b1430; --accent-soft:#1c2850;
-  --mark:#e9cf3f; --mark-ink:#2a2400;
-  --good:#4cc78a; --good-soft:#11301f; --warn:#f0a63b; --warn-soft:#33240c; --bad:#ff7a72; --bad-soft:#3a1715;
-  --f1:#7f9bff; --f2:#4cc78a; --f3:#ff7a72; --f4:#f0a63b; --f5:#b98cff; --f6:#4fc7d4;
-  color-scheme:dark }}
-:root[data-theme="dark"]{
-  --paper:#0f1522; --grid:#18212f; --sheet:#151d2c; --ink:#e7edf7; --ink-2:#a9b5c9; --ink-3:#7b879c;
-  --line:#26324a; --accent:#7f9bff; --accent-ink:#0b1430; --accent-soft:#1c2850;
-  --mark:#e9cf3f; --mark-ink:#2a2400;
-  --good:#4cc78a; --good-soft:#11301f; --warn:#f0a63b; --warn-soft:#33240c; --bad:#ff7a72; --bad-soft:#3a1715;
-  --f1:#7f9bff; --f2:#4cc78a; --f3:#ff7a72; --f4:#f0a63b; --f5:#b98cff; --f6:#4fc7d4;
-  color-scheme:dark }
 
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -191,7 +182,7 @@ button.chip{cursor:pointer}
 .plan li{display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px dashed var(--line)}
 .plan li:first-child{border-top:0}
 .plan .tick{width:22px;height:22px;border-radius:6px;border:2px solid var(--ink-3);flex:none;display:grid;place-items:center;font-size:.8rem}
-.plan li.done .tick{background:var(--good);border-color:var(--good);color:#fff}
+.plan li.done .tick{background:var(--good);border-color:var(--good);color:#06281b}
 .plan li.done .what{text-decoration:line-through;color:var(--ink-3)}
 .plan .what{flex:1;min-width:0}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -287,6 +278,104 @@ details>summary{cursor:pointer;font-weight:700;color:var(--accent)}
 math{font-size:1.1em}
 @media (max-width:480px){.topic-row{grid-template-columns:minmax(0,1fr) 70px 40px}.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .login-box{max-width:440px;width:100%;margin:40px auto}
+
+/* ---------- dark glow layer ---------- */
+body{background-color:var(--paper);background-image:radial-gradient(900px 520px at 12% -8%,rgba(139,92,246,.20),transparent 62%),radial-gradient(700px 480px at 95% 4%,rgba(56,189,248,.10),transparent 60%),radial-gradient(800px 600px at 50% 110%,rgba(99,102,241,.12),transparent 60%);background-size:auto;background-attachment:fixed}
+.grad{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.brand-mark{background:var(--grad)!important;box-shadow:0 0 18px -2px rgba(139,92,246,.7)}
+.brand-mark svg{width:18px;height:18px}
+.ic svg{width:18px;height:18px;display:block}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff;box-shadow:var(--glow)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn{background:rgba(255,255,255,.04)}
+.btn:hover{border-color:rgba(167,139,250,.5)}
+.sheet,.set-card,.exam-tile,.quick button,.subj,.feature,.howto li,.empty{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));border-color:var(--line)}
+.sheet{backdrop-filter:blur(6px)}
+.set-card:hover,.exam-tile:hover,.quick button:hover{border-color:rgba(167,139,250,.55);box-shadow:0 0 30px -12px rgba(139,92,246,.6)}
+.site-top,.side,.tabbar{background:rgba(10,11,22,.82)!important;backdrop-filter:blur(14px)}
+body::before{background:#0a0b16}
+.tools button{background:rgba(255,255,255,.03)}
+.tools button[aria-selected="true"]{background:var(--grad);border-color:transparent;color:#fff;box-shadow:var(--glow)}
+.side-link[aria-current="page"],.tabbar button[aria-current="page"]{color:#fff}
+.side-link[aria-current="page"]{background:var(--accent-soft);box-shadow:inset 2px 0 0 var(--accent)}
+.quick .ic,.feature .ico{background:var(--accent-soft);color:var(--accent)}
+.quick button.go .ic{background:var(--grad);color:#fff}
+.card{background:linear-gradient(180deg,#14172e,#0f1122);box-shadow:0 0 0 1px rgba(167,139,250,.18),0 24px 60px -30px rgba(139,92,246,.7)}
+.steps li::before{background:var(--grad);color:#fff}
+.type-tag{background:var(--accent-soft);color:var(--accent)}
+.type-tag.method{background:rgba(103,232,249,.14);color:var(--cyan)}
+.hl{background:linear-gradient(transparent 58%,rgba(139,92,246,.55) 58%)}
+.meter>i{background:var(--grad)}
+.progress-line>i{background:var(--grad)}
+.bubble.me{background:var(--grad)}
+.score-big,.ready-big,.days{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;color:transparent}
+.toast{background:#1c1f3d;color:var(--ink);border:1px solid rgba(167,139,250,.35);box-shadow:var(--glow)}
+.opt{background:rgba(255,255,255,.03)}
+input[type=text],input[type=date],select,textarea{background:rgba(255,255,255,.04)}
+.compare{background:rgba(255,255,255,.02)}
+.compare thead th{background:rgba(255,255,255,.04)}
+.tabbar button.plus .ic{background:var(--grad);box-shadow:var(--glow)}
+
+/* ---------- landing ---------- */
+.lp-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:22px;padding-block:72px 36px}
+.lp-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;border:1px solid rgba(167,139,250,.35);background:rgba(139,92,246,.10);color:#d8ccff;font-weight:600;font-size:.88rem}
+.lp-pill svg{width:14px;height:14px;color:var(--accent)}
+.lp-hero h1{font-size:clamp(2.4rem,7vw,4.6rem);line-height:1.02;letter-spacing:-.04em;font-weight:800;max-width:15ch}
+.lp-hero .lede{font-size:clamp(1.02rem,2vw,1.2rem);color:var(--ink-2);max-width:56ch}
+.lp-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.lp-note{color:var(--ink-3);font-size:.88rem}
+.mock-wrap{position:relative;padding-block:10px 40px}
+.mock-wrap::before{content:"";position:absolute;inset:8% 6% 14%;background:radial-gradient(closest-side,rgba(139,92,246,.55),rgba(99,102,241,.25) 55%,transparent);filter:blur(40px);z-index:0}
+.mock{position:relative;z-index:1;max-width:980px;margin:0 auto;border-radius:18px;border:1px solid rgba(167,139,250,.28);background:linear-gradient(180deg,#121429,#0b0c19);box-shadow:0 40px 120px -40px rgba(139,92,246,.75),inset 0 1px 0 rgba(255,255,255,.06);overflow:hidden}
+.mock-bar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.mock-bar i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.16)}
+.mock-bar span{margin-left:10px;font-size:.8rem;color:var(--ink-3);font-family:var(--f-mono)}
+.mock-body{display:grid;grid-template-columns:56px minmax(0,1.5fr) minmax(0,1fr);min-height:340px}
+.mock-side{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:18px;color:var(--ink-3)}
+.mock-side .on{color:#fff;background:var(--accent-soft);border-radius:9px;padding:7px}
+.mock-side span{display:block;padding:7px}
+.mock-side svg{width:18px;height:18px;display:block}
+.mock-main{padding:22px;display:flex;flex-direction:column;gap:14px;text-align:left;min-width:0}
+.mock-card .rich{overflow-x:auto}
+.mock-card{border-radius:14px;padding:18px;background:linear-gradient(180deg,#171a35,#111328);box-shadow:0 0 0 1px rgba(167,139,250,.22),0 20px 50px -28px rgba(139,92,246,.8);display:flex;flex-direction:column;gap:12px}
+.mock-card h4{font-family:var(--f-display);font-size:1.12rem}
+.mock-rate{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mock-rate span{border-radius:10px;padding:9px;text-align:center;font-weight:700;font-size:.85rem}
+.mock-rate .n{border:1px solid rgba(248,113,113,.5);color:var(--bad)}
+.mock-rate .y{border:1px solid rgba(52,211,153,.5);color:var(--good)}
+.mock-aside{border-left:1px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:16px;text-align:left;min-width:0}
+.ring{position:relative;width:120px;height:120px;align-self:center}
+.ring svg{width:120px;height:120px;transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-display);font-size:1.7rem;font-weight:800}
+.mini-plan{display:flex;flex-direction:column;gap:8px;font-size:.85rem}
+.mini-plan div{display:flex;gap:8px;align-items:center;color:var(--ink-2)}
+.mini-plan i{width:14px;height:14px;border-radius:4px;border:2px solid var(--ink-3);flex:none}
+.mini-plan i.ok{background:var(--good);border-color:var(--good)}
+.mini-plan .done{text-decoration:line-through;color:var(--ink-3)}
+.sources-strip{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;color:var(--ink-3);font-size:.9rem;padding-block:6px 30px}
+.sources-strip span{border:1px solid var(--line);border-radius:999px;padding:6px 14px;background:rgba(255,255,255,.02)}
+.lp-section{padding-block:56px;display:flex;flex-direction:column;gap:22px}
+.lp-head{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.lp-head h2{font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;max-width:22ch}
+.lp-head p{color:var(--ink-2);max-width:56ch}
+.lp-kicker{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.bento{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.bento .feature{padding:24px;gap:10px;border-radius:18px}
+.bento .feature.big{grid-column:span 2;background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(59,130,246,.08) 60%,rgba(255,255,255,.02));border-color:rgba(167,139,250,.35)}
+.bento .feature h3{font-size:1.15rem}
+.bento .feature.wide{grid-column:1 / -1}
+.feature .ico{width:42px;height:42px;border-radius:12px}
+.feature .ico svg{width:20px;height:20px}
+.steps3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;list-style:none;padding:0;margin:0}
+.steps3 li{border:1px solid var(--line);border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:8px;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01))}
+.steps3 .num{font-family:var(--f-mono);font-size:.85rem;color:var(--accent)}
+.cta-band{position:relative;overflow:hidden;border-radius:24px;border:1px solid rgba(167,139,250,.35);padding:48px 24px;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center;background:radial-gradient(600px 260px at 50% 0%,rgba(139,92,246,.35),transparent 70%),linear-gradient(180deg,#121429,#0b0c19)}
+.cta-band h2{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;letter-spacing:-.03em}
+@media (max-width:600px){.site-links a{display:none}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.mock{animation:drift 7s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.mock{animation:none}}
+@media (max-width:860px){.mock-body{grid-template-columns:minmax(0,1fr)}.mock-side{display:none}.mock-aside{border-left:0;border-top:1px solid var(--line)}.bento,.steps3{grid-template-columns:minmax(0,1fr)}.bento .feature.big{grid-column:auto}.lp-hero{padding-block:44px 24px}}
 </style>
 </head>
 <body>
@@ -345,6 +434,28 @@ function fixTex(v){
   if (v && typeof v === "object"){ const o = {}; for (const k in v) o[k] = fixTex(v[k]); return o; }
   return v;
 }
+
+
+/* ---------- icons ---------- */
+const SVG = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+const ICONS = {
+  today: SVG('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+  library: SVG('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/>'),
+  progress: SVG('<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>'),
+  plus: SVG('<path d="M12 5v14M5 12h14"/>'),
+  overview: SVG('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'),
+  notes: SVG('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/>'),
+  cards: SVG('<rect x="2" y="7" width="15" height="14" rx="2"/><path d="M7 7V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-3"/>'),
+  quiz: SVG('<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>'),
+  exam: SVG('<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/>'),
+  tutor: SVG('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/>'),
+  upload: SVG('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/>'),
+  target: SVG('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
+  plan: SVG('<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'),
+  spark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l2.6 7.9L22.5 12l-7.9 2.6L12 22.5l-2.6-7.9L1.5 12l7.9-2.6z"/></svg>'
+};
+Object.assign(ICONS, { "◷": ICONS.today, "▤": ICONS.library, "%": ICONS.progress, "+": ICONS.plus, "◫": ICONS.overview, "N": ICONS.notes, "F": ICONS.cards, "Q": ICONS.quiz, "E": ICONS.exam, "T": ICONS.tutor, "↑": ICONS.upload });
+const I = k => ICONS[k] || esc(k);
 
 /* ---------- storage: Supabase account store, browser fallback ---------- */
 const CFG = window.EXAM_READY_CONFIG || {};
@@ -912,24 +1023,35 @@ const aiOff = () => S.sample ? "" : '<p class="small muted">AI features aren’t
 /* ---------- landing ---------- */
 function vLanding(){
   const hasSets = Object.keys(S.subjects).length > 0;
-  const demo = '<div class="hero-demo" aria-hidden="true">' +
-    '<div class="demo-card c1"><div class="row between"><span class="type-tag method">Method · say the steps</span><span class="small muted">RC transients</span></div><b style="font-family:var(--f-display);font-size:1.15rem">Solving a first-order RC step response</b><ol class="steps"><li><div class="small rich">' + rich("Find \\(v(0)\\) before the switch") + '</div></li><li><div class="small rich">' + rich("Find \\(v(\\infty)\\) at steady state") + '</div></li><li><div class="small rich">' + rich("Set \\(\\tau = R_{th} C\\)") + '</div></li></ol></div>' +
-    '<div class="demo-card c2"><span class="label">Practice exam · marked</span><div class="row between"><span class="score-big" style="font-size:2.4rem">78%</span><span class="chip good">Grade 6</span></div><p class="small">You lost the most marks on <span class="hl">Thevenin circuits</span>.</p></div>' +
-    '<div class="demo-card c3"><div class="row between"><b>Digital Systems</b><span class="chip warn">12 days</span></div><div class="row between small"><span class="muted">Readiness</span><b class="mono">64%</b></div>' + meter(64) + '</div></div>';
-  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button><nav class="site-links"><a class="btn ghost small" href="#how">How it works</a><a class="btn ghost small" href="#features">Features</a>' + (hasSets ? '<button class="btn small primary" data-act="enter">Open my study sets</button>' : '<button class="btn small primary" data-act="new-set">Start studying</button>') + '</nav></div></header>' +
-    '<main><div class="wrap"><section class="hero"><div class="stack" style="gap:20px"><span class="chip acc" style="align-self:flex-start">For school and uni students</span><h1>Turn your notes into a plan that gets you <span class="hl">exam ready</span>.</h1><p class="lede">Upload your lecture slides, notes or past papers. Exam Ready writes your study notes, flashcards and practice exams, marks your answers, and tells you exactly what to study each day.</p><div class="hero-cta"><button class="btn primary big" data-act="new-set">Create a study set</button><button class="btn big" data-act="example">Try the demo</button></div><p class="small muted">Free to try · Works on phone and laptop · Maths shown properly</p></div>' + demo + '</section>' +
-    '<section class="band" id="how"><h2>How it works</h2><ol class="howto" style="padding:0;margin:0"><li><b>Upload your material</b><span class="muted small">PDF slides, typed notes, photos of textbook pages, past papers or the course outline.</span></li><li><b>Get your study set</b><span class="muted small">Study notes, flashcards with step-by-step method cards, quizzes and practice exams, all from your course.</span></li><li><b>Follow your daily plan</b><span class="muted small">See what to study today, sit marked practice exams, and watch your readiness score climb before exam day.</span></li></ol></section>' +
-    '<section class="band" id="features"><h2>Everything you need before an exam</h2><div class="features">' + [
-      ["N", "AI study notes", "Clean revision notes with headings, key formulas and common mistakes, written from your own slides."],
-      ["F", "Flashcards that teach", "Concept cards for facts, and method cards with numbered steps and why each step matters."],
-      ["Q", "Quick quizzes", "Ten-question quizzes with instant feedback and worked solutions."],
-      ["E", "Marked practice exams", "Timed exams in your course's style. Part marks for working, feedback on every answer, and an estimated grade."],
-      ["T", "AI tutor", "Ask anything about your course and get a step-by-step explanation at your level."],
-      ["%", "Readiness score", "Know how ready you are for each exam and which topic to fix first."]
-    ].map(f => '<div class="feature"><span class="ico">' + f[0] + '</span><h3>' + f[1] + '</h3><p class="small muted">' + f[2] + '</p></div>').join("") + '</div></section>' +
-    '<section class="band"><h2>Built for real exams</h2><div style="overflow-x:auto"><table class="compare"><thead><tr><th>What you get</th><th>Typical flashcard app</th><th>Exam Ready</th></tr></thead><tbody>' + [
-      ["Flashcards from your notes", "y", "y"], ["Step-by-step method cards for maths and science", "n", "y"], ["Practice exams in your course's style", "n", "y"], ["Marking with part marks for working", "n", "y"], ["Daily study plan to your exam date", "n", "y"], ["Readiness score per topic", "n", "y"]
-    ].map(r => '<tr><td>' + r[0] + '</td><td class="' + r[1] + '">' + (r[1] === "y" ? "Yes" : "No") + '</td><td class="' + r[2] + '">Yes</td></tr>').join("") + '</tbody></table></div><button class="btn primary big" data-act="new-set" style="align-self:flex-start">Create your first study set</button></section></div></main>' +
+  const ringC = 2 * Math.PI * 50, ringP = 0.72;
+  const mock = '<div class="mock-wrap" aria-hidden="true"><div class="mock"><div class="mock-bar"><i></i><i></i><i></i><span>examready · Electric Circuits</span></div><div class="mock-body">' +
+    '<div class="mock-side"><span class="on">' + I("today") + '</span><span>' + I("cards") + '</span><span>' + I("quiz") + '</span><span>' + I("exam") + '</span><span>' + I("tutor") + '</span></div>' +
+    '<div class="mock-main"><div class="row between"><span class="label">Flashcards · 3 of 12</span><span class="chip acc">RC transients</span></div><div class="progress-line"><i style="width:28%"></i></div>' +
+    '<div class="mock-card"><span class="type-tag method" style="align-self:flex-start">Method · say the steps</span><h4>Solving a first-order RC step response</h4><ol class="steps">' +
+    ['Find \\(v(0)\\) before the switch', 'Find \\(v(\\infty)\\) with the capacitor open', 'Set \\(\\tau = R_{th} C\\)', 'Write \\(v(t) = v(\\infty) + \\left[v(0) - v(\\infty)\\right] e^{-\\frac{t}{\\tau}}\\)'].map(t => '<li><div class="rich small">' + rich(t) + '</div></li>').join("") +
+    '</ol></div><div class="mock-rate"><span class="n">Didn’t know it</span><span class="y">Knew it</span></div></div>' +
+    '<div class="mock-aside"><span class="label">Exam readiness</span><div class="ring"><svg viewBox="0 0 120 120"><defs><linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#67e8f9"/></linearGradient></defs><circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/><circle cx="60" cy="60" r="50" fill="none" stroke="url(#rg)" stroke-width="10" stroke-linecap="round" stroke-dasharray="' + (ringC * ringP).toFixed(1) + ' ' + ringC.toFixed(1) + '"/></svg><b>72%</b></div>' +
+    '<div class="row between small"><span class="muted">Final exam</span><span class="chip warn">12 days</span></div>' +
+    '<div class="mini-plan"><span class="label">Today</span><div><i class="ok"></i><span class="done">Review 18 due cards</span></div><div><i></i><span>Practise Thevenin circuits</span></div><div><i></i><span>45-min practice exam</span></div></div></div>' +
+    '</div></div></div>';
+  const feats = [
+    ["exam", "Marked practice exams", "Timed exams written in your course’s style. Part marks for working, feedback on every answer, an estimated grade, and your mistakes turned into flashcards.", true],
+    ["cards", "Flashcards that teach", "Concept cards for facts and method cards with numbered steps, scheduled so you see each one right before you forget it."],
+    ["notes", "AI study notes", "Clean revision notes from your slides, with key formulas and common mistakes."],
+    ["quiz", "Quick quizzes", "Ten questions, instant feedback and a worked solution after each one."],
+    ["tutor", "AI tutor", "Ask anything about your course and get a step-by-step answer at your level."],
+    ["target", "Readiness score", "See how ready you are for each exam and which topic to fix first, with a daily plan that counts down to exam day.", "wide"]
+  ];
+  const cta = hasSets ? '<button class="btn primary big" data-act="enter">Open my study sets →</button>' : '<button class="btn primary big" data-act="new-set">Create a study set →</button>';
+  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">' + I("spark") + '</span>Exam Ready</button><nav class="site-links"><a class="btn ghost small" href="#how">How it works</a><a class="btn ghost small" href="#features">Features</a>' + (hasSets ? '<button class="btn small primary" data-act="enter">Open app</button>' : '<button class="btn small primary" data-act="new-set">Get started</button>') + '</nav></div></header>' +
+    '<main><div class="wrap"><section class="lp-hero"><span class="lp-pill">' + I("spark") + 'Your AI study partner for school and uni</span><h1>Study smarter. <span class="grad">Walk in exam ready.</span></h1><p class="lede">Upload your slides, notes or past papers. Exam Ready turns them into study notes, flashcards and marked practice exams, then tells you exactly what to study each day.</p><div class="lp-cta">' + cta + '<button class="btn big" data-act="example">Try the demo</button></div><p class="lp-note">Free to try · Works on phone and laptop · Maths shown properly</p></section>' +
+    mock + '<div class="sources-strip"><span>PDF slides</span><span>Typed notes</span><span>Photos of pages</span><span>Past papers</span><span>Course outlines</span></div>' +
+    '<section class="lp-section" id="how"><div class="lp-head"><span class="lp-kicker">How it works</span><h2>From messy notes to exam ready in three steps</h2></div><ol class="steps3"><li><span class="num">01 · Upload</span><h3>Add your material</h3><p class="muted small">Lecture slides, notes, textbook photos, past papers or the course outline.</p></li><li><span class="num">02 · Generate</span><h3>Get your study set</h3><p class="muted small">Notes, flashcards, quizzes and practice exams built from your own course.</p></li><li><span class="num">03 · Improve</span><h3>Follow your daily plan</h3><p class="muted small">Study what matters today, sit marked exams, and watch your readiness climb.</p></li></ol></section>' +
+    '<section class="lp-section" id="features"><div class="lp-head"><span class="lp-kicker">Features</span><h2>Everything you need before an exam, in one place</h2></div><div class="bento">' + feats.map(f => '<div class="feature' + (f[3] === true ? " big" : f[3] ? " " + f[3] : "") + '"><span class="ico">' + I(f[0]) + '</span><h3>' + f[1] + '</h3><p class="small muted">' + f[2] + '</p></div>').join("") + '</div></section>' +
+    '<section class="lp-section"><div class="lp-head"><span class="lp-kicker">Why Exam Ready</span><h2>Built for real exams, not just memorising</h2></div><div style="overflow-x:auto"><table class="compare"><thead><tr><th>What you get</th><th>Typical flashcard app</th><th>Exam Ready</th></tr></thead><tbody>' + [
+      ["Flashcards from your notes", "y"], ["Step-by-step method cards for maths and science", "n"], ["Practice exams in your course’s style", "n"], ["Marking with part marks for working", "n"], ["Daily study plan to your exam date", "n"], ["Readiness score per topic", "n"]
+    ].map(r => '<tr><td>' + r[0] + '</td><td class="' + r[1] + '">' + (r[1] === "y" ? "Yes" : "No") + '</td><td class="y">Yes</td></tr>').join("") + '</tbody></table></div></section>' +
+    '<section class="lp-section"><div class="cta-band"><span class="lp-kicker">Ready when you are</span><h2>Your next exam, <span class="grad">sorted.</span></h2><p class="muted">Make your first study set in about a minute.</p><div class="lp-cta">' + cta + '<button class="btn big" data-act="example">Try the demo</button></div></div></section></div></main>' +
     '<footer class="site-foot"><div class="wrap row between"><span>Exam Ready · Version 1</span><span>Made for students who want to walk into exams prepared.</span></div></footer>';
 }
 
@@ -940,15 +1062,15 @@ function shell(content){
   const folders = S.profile.folders || [];
   const sideSets = sets.slice(0, 12).map(s => '<button class="side-set" data-act="open-set" data-sid="' + s.id + '" aria-current="' + (S.subjectId === s.id && S.view === "set" ? "page" : "false") + '"><span class="fdot" style="background:' + folderColor(folderOf(s)) + '"></span><span class="t">' + esc(s.name) + '</span></button>').join("");
   const storeNote = store.mode === "cloud" && store.user ? esc(store.user.email || "Signed in") + ' · <button class="btn small ghost" data-act="signout" style="padding:2px 6px">Sign out</button>' : store.mode === "local" ? "Saved in this browser only" : "Not saved in this view";
-  return '<div class="shell"><aside class="side"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button>' +
+  return '<div class="shell"><aside class="side"><button class="brand" data-act="landing"><span class="brand-mark">' + I("spark") + '</span>Exam Ready</button>' +
     '<button class="btn primary new-btn" data-act="new-set">+ New study set</button>' +
-    '<button class="side-link" data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">◷</span>Today</button>' +
-    '<button class="side-link" data-act="go" data-view="library" aria-current="' + cur("library") + '"><span class="ic">▤</span>Library</button>' +
-    '<button class="side-link" data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">%</span>Progress</button>' +
+    '<button class="side-link" data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">' + I("◷") + '</span>Today</button>' +
+    '<button class="side-link" data-act="go" data-view="library" aria-current="' + cur("library") + '"><span class="ic">' + I("▤") + '</span>Library</button>' +
+    '<button class="side-link" data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">' + I("%") + '</span>Progress</button>' +
     (sets.length ? '<div class="side-sec"><span class="label">Study sets</span></div>' + sideSets : "") +
     '<div class="side-foot">' + storeNote + '</div></aside>' +
     '<div class="main"><div class="main-in">' + content + '</div></div>' +
-    '<nav class="tabbar" aria-label="Main"><button data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">◷</span>Today</button><button data-act="go" data-view="library" aria-current="' + (["library","set"].includes(S.view) ? "page" : "false") + '"><span class="ic">▤</span>Library</button><button class="plus" data-act="new-set"><span class="ic">+</span>New</button><button data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">%</span>Progress</button></nav></div>';
+    '<nav class="tabbar" aria-label="Main"><button data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">' + I("◷") + '</span>Today</button><button data-act="go" data-view="library" aria-current="' + (["library","set"].includes(S.view) ? "page" : "false") + '"><span class="ic">' + I("▤") + '</span>Library</button><button class="plus" data-act="new-set"><span class="ic">' + I("+") + '</span>New</button><button data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">' + I("%") + '</span>Progress</button></nav></div>';
 }
 
 /* ---------- dashboard ---------- */
@@ -1022,7 +1144,7 @@ function vSet(){
   const s = S.subjects[S.subjectId]; if (!s){ S.view = "library"; return vLibrary(); }
   const r = pct(readiness(s)), d = daysUntil(s.examDate), f = folderOf(s);
   const head = '<div class="set-head"><div class="row between" style="align-items:flex-start"><div class="stack" style="gap:6px;flex:1;min-width:220px"><span class="label"><span class="fdot" style="display:inline-block;background:' + folderColor(f) + ';margin-right:6px;vertical-align:-1px"></span>' + (f ? esc(f.name) + " · " : "") + (s.level === "school" ? "High school" : "University") + (s.example ? " · Demo" : "") + '</span><h1>' + esc(s.name) + '</h1>' + (d != null ? '<span class="small muted">Exam ' + esc(fmtDate(s.examDate)) + ' · <b class="' + (d >= 0 && d <= 7 ? "" : "") + '">' + (d < 0 ? "passed" : d === 0 ? "today" : d + " days to go") + '</b></span>' : '<span class="small muted">No exam date yet</span>') + '</div><div class="stack" style="gap:6px;min-width:170px"><span class="label">Readiness</span><span class="ready-big">' + r + '%</span>' + meter(r) + '</div></div>' +
-    '<div class="tools" role="tablist">' + TOOLS.map(([k, ic, l]) => '<button role="tab" aria-selected="' + (S.tool === k) + '" data-act="tool" data-tool="' + k + '" data-sid="' + s.id + '"><span class="ic">' + ic + '</span>' + l + '</button>').join("") + '</div></div>';
+    '<div class="tools" role="tablist">' + TOOLS.map(([k, ic, l]) => '<button role="tab" aria-selected="' + (S.tool === k) + '" data-act="tool" data-tool="' + k + '" data-sid="' + s.id + '"><span class="ic">' + I(ic) + '</span>' + l + '</button>').join("") + '</div></div>';
   const body = ({ overview: tOverview, notes: tNotes, flashcards: tCards, quiz: tQuiz, exams: tExams, tutor: tTutor, sources: tSources })[S.tool] || tOverview;
   return head + errBox() + busyBox() + body(s);
 }
@@ -1043,11 +1165,11 @@ function tOverview(s){
   const build = (!cards.length || !s.notes) && srcs.length ? '<section class="sheet" style="border-color:var(--accent)"><h2>Build your study set</h2><p class="muted small">Make study notes and 20 flashcards from your ' + srcs.length + ' file' + (srcs.length > 1 ? "s" : "") + '.</p><button class="btn primary" data-act="make-all" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Make notes and flashcards</button>' + aiOff() + '</section>' : "";
   const path = '<section class="sheet"><div class="row between"><h2>Path to mastery</h2><span class="small muted">Each stage builds on the one before</span></div><div class="path">' + pathStages(s).map(st => '<div class="stage"><b>' + st.name + '</b><div class="bar"><i style="width:' + pct(st.p) + '%"></i></div><span>' + esc(st.sub) + '</span></div>').join("") + '</div></section>';
   const quick = '<div class="quick">' +
-    '<button class="go" data-act="study-due" data-sid="' + s.id + '"' + (cards.length ? "" : " disabled") + '><span class="ic">F</span><b>Study flashcards</b><span class="small muted">' + due + ' due now</span></button>' +
-    '<button data-act="tool" data-tool="quiz" data-sid="' + s.id + '"><span class="ic">Q</span><b>Take a quiz</b><span class="small muted">10 quick questions</span></button>' +
-    '<button data-act="tool" data-tool="exams" data-sid="' + s.id + '"><span class="ic">E</span><b>Practice exam</b><span class="small muted">Timed and marked</span></button>' +
-    '<button data-act="tool" data-tool="notes" data-sid="' + s.id + '"><span class="ic">N</span><b>Read notes</b><span class="small muted">' + (s.notes ? "Ready" : "Not made yet") + '</span></button>' +
-    '<button data-act="tool" data-tool="tutor" data-sid="' + s.id + '"><span class="ic">T</span><b>Ask the tutor</b><span class="small muted">Explain anything</span></button></div>';
+    '<button class="go" data-act="study-due" data-sid="' + s.id + '"' + (cards.length ? "" : " disabled") + '><span class="ic">' + I("F") + '</span><b>Study flashcards</b><span class="small muted">' + due + ' due now</span></button>' +
+    '<button data-act="tool" data-tool="quiz" data-sid="' + s.id + '"><span class="ic">' + I("Q") + '</span><b>Take a quiz</b><span class="small muted">10 quick questions</span></button>' +
+    '<button data-act="tool" data-tool="exams" data-sid="' + s.id + '"><span class="ic">' + I("E") + '</span><b>Practice exam</b><span class="small muted">Timed and marked</span></button>' +
+    '<button data-act="tool" data-tool="notes" data-sid="' + s.id + '"><span class="ic">' + I("N") + '</span><b>Read notes</b><span class="small muted">' + (s.notes ? "Ready" : "Not made yet") + '</span></button>' +
+    '<button data-act="tool" data-tool="tutor" data-sid="' + s.id + '"><span class="ic">' + I("T") + '</span><b>Ask the tutor</b><span class="small muted">Explain anything</span></button></div>';
   const folders = S.profile.folders || [];
   const settings = '<details class="sheet"><summary>Set details</summary><div class="fields" style="margin-top:12px"><label class="field"><span>Name</span><input type="text" id="set-name" value="' + esc(s.name) + '" maxlength="80"></label><label class="field"><span>Exam date</span><input type="date" id="set-date" value="' + esc(s.examDate || "") + '"></label><label class="field"><span>Folder</span><select id="set-folder"><option value="">No folder</option>' + folders.map(f => '<option value="' + f.id + '"' + (s.folder === f.id ? " selected" : "") + '>' + esc(f.name) + '</option>').join("") + '</select></label><label class="field"><span>Level</span><select id="set-level"><option value="uni"' + (s.level !== "school" ? " selected" : "") + '>University</option><option value="school"' + (s.level === "school" ? " selected" : "") + '>High school</option></select></label></div>' +
     (S.confirm === "del-set" ? '<div class="notice bad row between" style="margin-top:12px"><span>Delete this study set, its files, cards and exams?</span><span class="row"><button class="btn small danger" data-act="del-set-yes">Delete</button><button class="btn small" data-act="confirm-cancel">Keep</button></span></div>' : '<button class="btn small ghost danger" data-act="del-set" style="margin-top:12px">Delete study set</button>') + '</details>';
@@ -1196,7 +1318,7 @@ function vProgress(){
 /* ---------- login ---------- */
 function vLogin(){
   const sent = S.loginSent;
-  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button></div></header><main><div class="wrap"><section class="sheet login-box">' +
+  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">' + I("spark") + '</span>Exam Ready</button></div></header><main><div class="wrap"><section class="sheet login-box">' +
     (sent ? '<h1>Check your email</h1><p class="muted">We sent a sign-in link to <b>' + esc(sent) + '</b>. Open it on this device to start studying. It can take a minute to arrive, so check your spam folder too.</p><button class="btn ghost" data-act="login-again" style="align-self:flex-start">Use a different email</button>'
     : '<h1>Sign in to Exam Ready</h1><p class="muted">Enter your email and we’ll send you a sign-in link. No password needed. Your study sets save to your account, so they’re on every device.</p>' + errBox() +
       '<form id="login-form" class="stack"><label class="field"><span>Email</span><input type="text" inputmode="email" autocomplete="email" id="login-email" placeholder="you@student.edu.au" required></label><button class="btn primary big" type="submit"' + (S.loginBusy ? " disabled" : "") + '>' + (S.loginBusy ? "Sending…" : "Email me a sign-in link") + '</button></form>') +
