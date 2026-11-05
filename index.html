@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Turn your notes into study notes, flashcards, quizzes and marked practice exams. Built for school and uni students.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232346c7'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='700' fill='white' text-anchor='middle'%3EER%3C/text%3E%3C/svg%3E">
+<title>Exam Ready</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+/* Layout: a study web app — marketing home page, then an app shell with a left sidebar (bottom tab bar on phones); each study set opens into tool tabs. Engineering-pad grid paper, ink-blue type, highlighter yellow for what matters. */
+:root{
+  --paper:#f4f7fb; --grid:#e3e9f3; --sheet:#ffffff; --ink:#14223a; --ink-2:#4a5a74; --ink-3:#7d8aa1;
+  --line:#d8dfea; --accent:#2346c7; --accent-ink:#ffffff; --accent-soft:#e7edff;
+  --mark:#ffe45c; --mark-ink:#3b3300;
+  --good:#17804a; --good-soft:#dff3e8; --warn:#b26a00; --warn-soft:#fff0d6; --bad:#c2312b; --bad-soft:#fde4e2;
+  --f1:#2346c7; --f2:#17804a; --f3:#c2312b; --f4:#b26a00; --f5:#7a3fc2; --f6:#0e7f8c;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r:12px; --side:236px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f1522; --grid:#18212f; --sheet:#151d2c; --ink:#e7edf7; --ink-2:#a9b5c9; --ink-3:#7b879c;
+  --line:#26324a; --accent:#7f9bff; --accent-ink:#0b1430; --accent-soft:#1c2850;
+  --mark:#e9cf3f; --mark-ink:#2a2400;
+  --good:#4cc78a; --good-soft:#11301f; --warn:#f0a63b; --warn-soft:#33240c; --bad:#ff7a72; --bad-soft:#3a1715;
+  --f1:#7f9bff; --f2:#4cc78a; --f3:#ff7a72; --f4:#f0a63b; --f5:#b98cff; --f6:#4fc7d4;
+  color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0f1522; --grid:#18212f; --sheet:#151d2c; --ink:#e7edf7; --ink-2:#a9b5c9; --ink-3:#7b879c;
+  --line:#26324a; --accent:#7f9bff; --accent-ink:#0b1430; --accent-soft:#1c2850;
+  --mark:#e9cf3f; --mark-ink:#2a2400;
+  --good:#4cc78a; --good-soft:#11301f; --warn:#f0a63b; --warn-soft:#33240c; --bad:#ff7a72; --bad-soft:#3a1715;
+  --f1:#7f9bff; --f2:#4cc78a; --f3:#ff7a72; --f4:#f0a63b; --f5:#b98cff; --f6:#4fc7d4;
+  color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+img{max-width:100%}
+body{margin:0}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--sheet)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.25rem;font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)} .small{font-size:.875rem}
+.label{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;font-weight:700;color:var(--ink-3)}
+.hl{background:linear-gradient(transparent 55%,var(--mark) 55%);color:inherit;padding:0 .1em}
+
+/* ---------- landing ---------- */
+.site-top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--sheet);border-bottom:1px solid var(--line)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.site-top .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:800;font-size:1.2rem;letter-spacing:-.01em;background:none;border:0;padding:0;cursor:pointer;color:var(--ink)}
+.brand-mark{width:32px;height:32px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:.85rem;font-family:var(--f-mono);font-weight:600}
+.site-links{display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap}
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center;padding-block:56px 40px}
+.hero h1{font-size:clamp(2.2rem,5.6vw,3.9rem);line-height:1.02;letter-spacing:-.035em}
+.hero p.lede{font-size:1.15rem;color:var(--ink-2);max-width:52ch}
+.hero-cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero-demo{position:relative;min-height:360px}
+.demo-card{position:absolute;background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 16px 40px -24px rgba(20,34,58,.45);display:flex;flex-direction:column;gap:10px;width:min(360px,92%)}
+.demo-card.c1{top:0;left:0;transform:rotate(-2.5deg)}
+.demo-card.c2{top:120px;right:0;transform:rotate(2deg)}
+.demo-card.c3{bottom:0;left:8%;transform:rotate(-.5deg)}
+.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-block:24px}
+.feature{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:8px}
+.feature .ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-weight:600}
+.howto{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;counter-reset:h}
+.howto li{list-style:none;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:6px;counter-increment:h}
+.howto li::before{content:counter(h);width:30px;height:30px;border-radius:8px;background:var(--mark);color:var(--mark-ink);display:grid;place-items:center;font-family:var(--f-mono);font-weight:600}
+.band{padding-block:48px;display:flex;flex-direction:column;gap:20px}
+.band h2{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;letter-spacing:-.02em}
+.compare{width:100%;border-collapse:collapse;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;min-width:520px}
+.compare th,.compare td{padding:12px 14px;border-top:1px solid var(--line);text-align:left}
+.compare thead th{border-top:0;background:var(--paper);font-size:.85rem}
+.compare td.y{color:var(--good);font-weight:700} .compare td.n{color:var(--ink-3)}
+.site-foot{border-top:1px solid var(--line);background:var(--sheet);padding-block:24px;color:var(--ink-3);font-size:.85rem}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);padding-block:32px}.hero-demo{min-height:380px}.features,.howto{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- app shell ---------- */
+.shell{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:0;height:100vh;height:100dvh;background:var(--sheet);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px;padding:calc(16px + env(safe-area-inset-top,0px)) 12px 16px max(12px,env(safe-area-inset-left,0px));overflow-y:auto}
+.side .brand{padding:4px 8px 12px}
+.new-btn{width:100%;justify-content:center;padding:11px 14px;margin-bottom:8px}
+.side-link{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;padding:9px 10px;border-radius:9px;font-weight:700;color:var(--ink-2);cursor:pointer;text-align:left}
+.side-link:hover{background:var(--paper);color:var(--ink)}
+.side-link[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.side-link .ic{width:20px;text-align:center;font-family:var(--f-mono)}
+.side-sec{margin-top:10px;padding:6px 10px 2px;display:flex;justify-content:space-between;align-items:center}
+.fdot{width:10px;height:10px;border-radius:3px;flex:none}
+.side-set{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;padding:6px 10px;border-radius:8px;color:var(--ink-2);cursor:pointer;text-align:left;font-size:.9rem;min-width:0}
+.side-set span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.side-set:hover{background:var(--paper);color:var(--ink)}
+.side-set[aria-current="page"]{color:var(--ink);font-weight:700;background:var(--paper)}
+.side-foot{margin-top:auto;padding:8px 10px;font-size:.78rem;color:var(--ink-3)}
+.main{min-width:0;padding-block:28px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.main-in{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-width:0}
+.tabbar{display:none}
+@media (max-width:820px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .main{padding-top:calc(20px + env(safe-area-inset-top,0px))}
+  .tabbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--sheet);border-top:1px solid var(--line);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .tabbar button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;font-size:.72rem;font-weight:700;color:var(--ink-3);cursor:pointer;border-radius:8px}
+  .tabbar button .ic{font-family:var(--f-mono);font-size:1rem}
+  .tabbar button[aria-current="page"]{color:var(--accent)}
+  .tabbar button.plus .ic{background:var(--accent);color:var(--accent-ink);width:34px;height:26px;border-radius:8px;display:grid;place-items:center}
+}
+
+/* ---------- shared components ---------- */
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px}
+.grid-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9px;border:1px solid var(--line);background:var(--sheet);padding:9px 14px;font-weight:700;cursor:pointer;line-height:1.2;text-align:center;color:var(--ink)}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.big{padding:14px 20px;font-size:1.05rem;border-radius:11px}
+.btn.ghost{border-color:transparent;background:none;color:var(--ink-2)}
+.btn.ghost:hover{color:var(--ink);background:var(--accent-soft)}
+.btn.danger{color:var(--bad)} .btn.small{padding:6px 10px;font-size:.85rem}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>span{font-size:.85rem;font-weight:700;color:var(--ink-2)}
+input[type=text],input[type=date],select,textarea{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;min-width:0}
+textarea{min-height:110px;resize:vertical;line-height:1.5}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px;flex-wrap:wrap;background:var(--paper)}
+.seg button{border:0;background:none;padding:7px 12px;border-radius:7px;font-weight:700;cursor:pointer;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--sheet);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:.78rem;font-weight:700;background:var(--paper);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.good{background:var(--good-soft);color:var(--good);border-color:transparent}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.chip.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.chip.acc{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+button.chip{cursor:pointer}
+.meter{height:8px;border-radius:99px;background:var(--grid);overflow:hidden}
+.meter>i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.meter.good>i{background:var(--good)} .meter.warn>i{background:var(--warn)} .meter.bad>i{background:var(--bad)}
+.ready-big{font-family:var(--f-display);font-weight:800;font-size:2.4rem;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.empty{border:2px dashed var(--line);border-radius:var(--r);padding:28px 20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start;background:var(--sheet)}
+.notice{padding:12px 14px;border-radius:9px;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.notice.bad{background:var(--bad-soft);color:var(--bad)}
+.busy{display:flex;gap:14px;align-items:center;background:var(--accent-soft);border-radius:var(--r);padding:14px 16px}
+.spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp .9s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:9px;font-weight:700;z-index:40;max-width:calc(100% - 32px)}
+.list{display:flex;flex-direction:column}
+.list>.item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);min-width:0}
+.list>.item:first-child{border-top:0}
+.item .grow{flex:1;min-width:0}
+.dots{display:inline-flex;gap:3px}
+.dots i{width:7px;height:7px;border-radius:2px;background:var(--grid)} .dots i.on{background:var(--good)}
+.type-tag{font-family:var(--f-mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:4px;background:var(--accent-soft);color:var(--accent);font-weight:600;white-space:nowrap}
+.type-tag.method{background:var(--mark);color:var(--mark-ink)}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:22px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;background:var(--paper);cursor:pointer}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.topic-row{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:12px;align-items:center}
+.foot{color:var(--ink-3);font-size:.8rem;text-align:center}
+
+/* dashboard */
+.strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.exam-tile{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:8px;cursor:pointer;text-align:left;color:var(--ink)}
+.exam-tile:hover{border-color:var(--accent)}
+.days{font-family:var(--f-display);font-weight:800;font-size:1.9rem;line-height:1;font-variant-numeric:tabular-nums}
+.plan{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.plan li{display:flex;gap:14px;align-items:center;padding:12px 0;border-top:1px dashed var(--line)}
+.plan li:first-child{border-top:0}
+.plan .tick{width:22px;height:22px;border-radius:6px;border:2px solid var(--ink-3);flex:none;display:grid;place-items:center;font-size:.8rem}
+.plan li.done .tick{background:var(--good);border-color:var(--good);color:#fff}
+.plan li.done .what{text-decoration:line-through;color:var(--ink-3)}
+.plan .what{flex:1;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.set-card{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;min-width:0;color:var(--ink);border-top:4px solid var(--fc,var(--line))}
+.set-card:hover{border-color:var(--accent);border-top-color:var(--fc,var(--accent))}
+.folders{display:flex;gap:8px;flex-wrap:wrap}
+.folder-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--sheet);font-weight:700;cursor:pointer;color:var(--ink-2)}
+.folder-btn[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+
+/* set page */
+.set-head{display:flex;flex-direction:column;gap:14px}
+.tools{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tools button{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--sheet);padding:9px 14px;border-radius:999px;font-weight:700;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.tools button .ic{font-family:var(--f-mono);font-size:.85rem}
+.tools button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--sheet)}
+.path{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.path .stage{display:flex;flex-direction:column;gap:6px;min-width:0}
+.path .stage .bar{height:8px;border-radius:99px;background:var(--grid);overflow:hidden}
+.path .stage .bar i{display:block;height:100%;background:var(--good)}
+.path .stage b{font-size:.82rem}
+.path .stage span{font-size:.76rem;color:var(--ink-3)}
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.quick button{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px;text-align:left;cursor:pointer;color:var(--ink)}
+.quick button:hover{border-color:var(--accent)}
+.quick .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-weight:600}
+.quick button.go .ic{background:var(--mark);color:var(--mark-ink)}
+
+/* study + flashcards */
+.study-wrap{max-width:720px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:28px 24px;min-height:260px;display:flex;flex-direction:column;gap:16px;box-shadow:0 2px 0 var(--line),0 10px 30px -18px rgba(20,34,58,.35)}
+.card .front{font-family:var(--f-display);font-weight:700;font-size:1.35rem;line-height:1.3;text-wrap:balance}
+.card .back{border-top:2px dashed var(--line);padding-top:16px;display:flex;flex-direction:column;gap:12px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
+.steps li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;counter-increment:s}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;width:28px;height:28px;border-radius:7px;background:var(--mark);color:var(--mark-ink);display:grid;place-items:center;font-size:.9rem}
+.steps .why{color:var(--ink-2);font-size:.92rem}
+.rate{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rate .btn{flex-direction:column;gap:2px;padding:14px 8px;font-size:1.02rem}
+.rate .btn small{font-weight:400;color:var(--ink-3);font-size:.75rem}
+.rate .no{border-color:var(--bad);color:var(--bad)} .rate .yes{border-color:var(--good);color:var(--good)}
+.rate-more{display:flex;gap:8px;justify-content:center}
+.explain{background:var(--accent-soft);border-radius:10px;padding:14px 16px}
+.progress-line{height:4px;background:var(--grid);border-radius:4px;overflow:hidden}
+.progress-line>i{display:block;height:100%;background:var(--accent)}
+
+/* exam */
+.exam-head{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:4;background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.timer{font-family:var(--f-mono);font-weight:600;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad)}
+.qnav{display:flex;gap:6px;flex-wrap:wrap}
+.qnav button{width:34px;height:34px;border-radius:7px;border:1px solid var(--line);background:var(--sheet);font-family:var(--f-mono);font-weight:600;cursor:pointer;color:var(--ink)}
+.qnav button.answered{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.qnav button.right{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+.qnav button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.qnav button[aria-current="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.question{display:flex;flex-direction:column;gap:14px}
+.qmeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.qtext{font-size:1.08rem}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:var(--paper)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{margin-top:4px;accent-color:var(--accent)}
+.opt.correct{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.photo-thumb{max-height:120px;border-radius:8px;border:1px solid var(--line)}
+.solution{background:var(--paper);border-left:4px solid var(--mark);border-radius:0 8px 8px 0;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+details>summary{cursor:pointer;font-weight:700;color:var(--accent)}
+.score-big{font-family:var(--f-display);font-weight:800;font-size:clamp(2.6rem,8vw,3.6rem);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+
+/* tutor chat */
+.chat{display:flex;flex-direction:column;gap:12px}
+.bubble{max-width:85%;padding:12px 14px;border-radius:14px;min-width:0}
+.bubble.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:4px}
+.bubble.ai{align-self:flex-start;background:var(--paper);border:1px solid var(--line);border-bottom-left-radius:4px}
+.chat-input{display:flex;gap:8px;align-items:flex-end}
+.chat-input textarea{min-height:48px;max-height:180px}
+.suggest{display:flex;gap:8px;flex-wrap:wrap}
+
+/* notes */
+.notes-doc{max-width:70ch}
+.rich{overflow-wrap:anywhere}
+.rich p+p{margin-top:.6em}
+.rich .li{display:flex;gap:8px;margin:.2em 0}
+.rich .li>span:first-child{flex:none;font-family:var(--f-mono);color:var(--ink-3)}
+.rich code{font-family:var(--f-mono);font-size:.9em;background:var(--paper);padding:1px 5px;border-radius:4px}
+.rich h3.rh{font-size:1.2rem;margin:1.1em 0 .4em}
+.rich h4.rh{font-size:1.02rem;margin:.9em 0 .3em}
+.rich .rh:first-child{margin-top:0}
+.rich .katex-display{display:block;overflow-x:auto;margin:.5em 0;text-align:center}
+.bubble.me .rich code{background:rgba(255,255,255,.18)}
+math{font-size:1.1em}
+@media (max-width:480px){.topic-row{grid-template-columns:minmax(0,1fr) 70px 40px}.path{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.login-box{max-width:440px;width:100%;margin:40px auto}
+</style>
+</head>
+<body>
+
+<div id="root"><div class="wrap" style="padding-block:40px"><div class="busy"><div class="spin"></div><div><b>Opening Exam Ready</b><p class="small muted">Loading your study sets.</p></div></div></div></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const DAY = 86400000;
+const dkey = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+const today = () => dkey(new Date());
+const daysUntil = iso => { if (!iso) return null; const t = new Date(iso + "T00:00:00"); const n = new Date(); n.setHours(0,0,0,0); return Math.round((t - n) / DAY); };
+const fmtDate = iso => iso ? new Date(iso + "T00:00:00").toLocaleDateString(undefined, { day:"numeric", month:"short" }) : "";
+const fmtWhen = ms => new Date(ms).toLocaleDateString(undefined, { day:"numeric", month:"short", hour:"numeric", minute:"2-digit" });
+const pct = x => Math.round((x || 0) * 100);
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const tone = p => p >= 75 ? "good" : p >= 50 ? "warn" : "bad";
+let toastT;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+/* ---------- maths + rich text ---------- */
+function renderTex(tex, display){
+  try { if (window.katex) return katex.renderToString(tex, { output:"mathml", throwOnError:false, displayMode:display }); } catch(e) {}
+  return '<code>' + esc(tex) + '</code>';
+}
+const fmtInline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>");
+function rich(src){
+  if (src == null) return "";
+  const maths = [];
+  const s = String(src).replace(/\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)/g, (m, a, b, c) => {
+    maths.push(renderTex((a ?? b ?? c).trim(), a != null || b != null));
+    return "\u0000" + (maths.length - 1) + "\u0000";
+  });
+  let out = "", para = [];
+  const flush = () => { if (para.length){ out += "<p>" + para.map(fmtInline).join("<br>") + "</p>"; para = []; } };
+  for (const ln of s.split(/\n/)){
+    const h = ln.match(/^\s*(#{1,4})\s+(.*)$/), m = ln.match(/^\s*(\d+)[.)]\s+(.*)$/), b = ln.match(/^\s*[-•*]\s+(.*)$/);
+    if (h){ flush(); out += (h[1].length <= 2 ? '<h3 class="rh">' : '<h4 class="rh">') + fmtInline(h[2]) + (h[1].length <= 2 ? "</h3>" : "</h4>"); }
+    else if (m){ flush(); out += '<div class="li"><span>' + m[1] + '.</span><span>' + fmtInline(m[2]) + '</span></div>'; }
+    else if (b){ flush(); out += '<div class="li"><span>•</span><span>' + fmtInline(b[1]) + '</span></div>'; }
+    else if (!ln.trim()) flush();
+    else para.push(ln);
+  }
+  flush();
+  return out.replace(/\u0000(\d+)\u0000/g, (m, i) => maths[+i]);
+}
+function fixTex(v){
+  if (typeof v === "string") return v.replace(/\f/g, "\\f").replace(/\x08/g, "\\b").replace(/\t(?=[a-z])/g, "\\t").replace(/\r(?=[a-z])/g, "\\r");
+  if (Array.isArray(v)) return v.map(fixTex);
+  if (v && typeof v === "object"){ const o = {}; for (const k in v) o[k] = fixTex(v[k]); return o; }
+  return v;
+}
+
+/* ---------- storage: Supabase account store, browser fallback ---------- */
+const CFG = window.EXAM_READY_CONFIG || {};
+const hasCloud = !!(CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY && window.supabase);
+const sb = hasCloud ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
+const store = {
+  mode: "memory", user: null,
+  async init(){
+    if (sb){
+      this.mode = "cloud";
+      const { data } = await sb.auth.getSession();
+      this.user = data.session ? data.session.user : null;
+      return;
+    }
+    try { localStorage.setItem("er_test", "1"); localStorage.removeItem("er_test"); this.mode = "local"; } catch(e) { this.mode = "memory"; }
+  },
+  needsLogin(){ return this.mode === "cloud" && !this.user; },
+  async token(){ if (!sb) return null; const { data } = await sb.auth.getSession(); return data.session ? data.session.access_token : null; },
+  async loadAll(){
+    if (this.mode === "cloud"){
+      if (!this.user) return [];
+      const out = []; let from = 0;
+      for (;;){
+        const { data, error } = await sb.from("docs").select("key,data").range(from, from + 999);
+        if (error) throw error;
+        out.push(...data.map(r => ({ id: r.key, data: r.data })));
+        if (data.length < 1000) break; from += 1000;
+      }
+      return out;
+    }
+    if (this.mode === "local"){ const out = []; try { for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k.startsWith("er:")) out.push({ id: k.slice(3), data: JSON.parse(localStorage.getItem(k)) }); } } catch(e) {} return out; }
+    return [];
+  },
+  chains: {}, pending: {},
+  save(key, data){
+    this.pending[key] = data;
+    if (this.chains[key]) return this.chains[key];
+    const run = async () => {
+      while (this.pending[key] !== undefined){
+        const d = this.pending[key]; delete this.pending[key];
+        try {
+          if (this.mode === "cloud"){
+            if (!this.user) continue;
+            const r = d === null ? await sb.from("docs").delete().eq("key", key)
+              : await sb.from("docs").upsert({ user_id: this.user.id, key, data: JSON.parse(JSON.stringify(d)), updated_at: new Date().toISOString() });
+            if (r.error) throw r.error;
+          }
+          else if (this.mode === "local"){ if (d === null) localStorage.removeItem("er:" + key); else localStorage.setItem("er:" + key, JSON.stringify(d)); }
+        } catch(e){
+          toast(e && /quota|exceed/i.test(e.message || e.name || "") ? "Storage is full. Delete an old study set or exam to save more." : "Couldn't save that change. Check your connection and try again.");
+        }
+      }
+      delete this.chains[key];
+    };
+    return this.chains[key] = run();
+  },
+  del(key){ return this.save(key, null); }
+};
+
+/* ---------- AI: calls the Worker, which holds the API key ---------- */
+async function fileToImageBlock(file){
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    const data = c.toDataURL("image/jpeg", 0.85).split(",")[1];
+    return { type: "image", source: { type: "base64", media_type: "image/jpeg", data } };
+  } catch(e){ throw { code: "image_rejected" }; } finally { URL.revokeObjectURL(url); }
+}
+function parseJsonLoose(text){
+  const tries = [text];
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/); if (fence) tries.push(fence[1]);
+  const a = text.search(/[\[{]/), z = Math.max(text.lastIndexOf("}"), text.lastIndexOf("]")); if (a >= 0 && z > a) tries.push(text.slice(a, z + 1));
+  for (const t of tries){ try { return JSON.parse(t); } catch(e) {} }
+  throw { code: "invalid_json", text };
+}
+function makeAI(){
+  if (!CFG.AI_URL) return null;
+  async function call(input, opts = {}){
+    const messages = typeof input === "string" ? [{ role: "user", content: input }] : input.map(m => ({ role: m.role, content: m.content }));
+    if (opts.images){
+      const files = Array.from(opts.images);
+      const blocks = await Promise.all(files.map(fileToImageBlock));
+      const last = messages[messages.length - 1];
+      last.content = [...blocks, { type: "text", text: String(last.content) }];
+    }
+    const token = await store.token();
+    if (store.mode === "cloud" && !token) throw { code: "session_expired" };
+    let res;
+    try {
+      res = await fetch(CFG.AI_URL, { method: "POST", signal: opts.signal, headers: { "content-type": "application/json", ...(token ? { authorization: "Bearer " + token } : {}) },
+        body: JSON.stringify({ messages, tier: opts.modelTier || "default", json: !!opts.json }) });
+    } catch(e){ throw { code: e && e.name === "AbortError" ? "cancelled" : "upstream_error" }; }
+    if (!res.ok){ let j = {}; try { j = await res.json(); } catch(e) {} throw { code: j.error || (res.status === 401 ? "session_expired" : res.status === 429 ? "rate_limited" : "upstream_error") }; }
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = "", text = "", stop = null;
+    try {
+      for (;;){
+        const { value, done } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        let i;
+        while ((i = buf.indexOf("\n")) >= 0){
+          const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1);
+          if (!line.startsWith("data:")) continue;
+          let ev; try { ev = JSON.parse(line.slice(5)); } catch(e) { continue; }
+          if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta"){ text += ev.delta.text; if (opts.onText) opts.onText({ text, delta: ev.delta.text }); }
+          else if (ev.type === "message_delta" && ev.delta) stop = ev.delta.stop_reason;
+          else if (ev.type === "error") throw { code: ev.error && ev.error.type === "overloaded_error" ? "rate_limited" : "upstream_error", text };
+        }
+      }
+    } catch(e){ if (e && e.code) throw e; throw { code: opts.signal && opts.signal.aborted ? "cancelled" : "upstream_error", text }; }
+    if (stop === "refusal") throw { code: "refused" };
+    if (!text.trim()) throw { code: "empty_completion" };
+    return { text, truncated: stop === "max_tokens" };
+  }
+  const sample = (input, opts) => call(input, opts);
+  sample.json = async (input, opts = {}) => { const r = await call(input, Object.assign({}, opts, { json: true })); return parseJsonLoose(r.text); };
+  sample.limits = async () => ({ images: { maxCount: 5, maxInputBytes: 20 * 1024 * 1024, mediaTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"] } });
+  return sample;
+}
+
+/* ---------- state ---------- */
+const FOLDER_COLORS = ["--f1","--f2","--f3","--f4","--f5","--f6"];
+const S = {
+  subjects: {}, sources: {}, exams: {}, profile: { activity: {}, folders: [], seenLanding: false },
+  view: "landing", subjectId: null, tool: "overview", folderFilter: "all",
+  session: null, run: null, resultId: null, chatBusy: false,
+  busy: null, error: null, confirm: null, imgLimits: null, sample: null, loaded: false,
+  draft: { cardsN: 20, cardsMix: "both", cardsFocus: "", examLen: "standard", examDiff: "exam", examMode: "exam", examPredict: true, examTopics: [], srcType: "notes", newFolder: "", newFolderColor: 0, pendingFiles: null }
+};
+const saveSubject = s => store.save("subj_" + s.id, s);
+const saveProfile = () => store.save("profile", S.profile);
+const folderOf = s => (S.profile.folders || []).find(f => f.id === s.folder);
+const folderColor = f => f ? "var(" + FOLDER_COLORS[f.color % FOLDER_COLORS.length] + ")" : "var(--line)";
+function logMinutes(min){
+  if (!(min > 0)) return;
+  const k = today();
+  S.profile.activity[k] = Math.round(((S.profile.activity[k] || 0) + min) * 10) / 10;
+  const keys = Object.keys(S.profile.activity).sort();
+  if (keys.length > 120) for (const old of keys.slice(0, keys.length - 120)) delete S.profile.activity[old];
+  saveProfile();
+}
+function streak(){ let n = 0; const d = new Date(); if (!S.profile.activity[dkey(d)]) d.setDate(d.getDate() - 1); while (S.profile.activity[dkey(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function weekMinutes(){ let t = 0; const d = new Date(); for (let i = 0; i < 7; i++){ t += S.profile.activity[dkey(d)] || 0; d.setDate(d.getDate() - 1); } return Math.round(t); }
+
+/* ---------- spaced repetition ---------- */
+const INTERVAL = [0, 1, 2, 4, 8, 16, 32];
+const mastery = c => clamp((c.box || 0) / 5, 0, 1);
+const isDue = c => !c.due || c.due <= Date.now();
+function rateCard(c, r){
+  const now = Date.now(); c.reviews = (c.reviews || 0) + 1;
+  if (r === "again"){ c.box = 0; c.lapses = (c.lapses || 0) + 1; c.due = now + 60000; }
+  else if (r === "hard"){ c.box = Math.max(1, c.box || 0); c.due = now + Math.max(0.5, INTERVAL[c.box] * 0.5) * DAY; }
+  else if (r === "good"){ c.box = clamp((c.box || 0) + 1, 1, 6); c.due = now + INTERVAL[c.box] * DAY; }
+  else { c.box = clamp((c.box || 0) + 2, 2, 6); c.due = now + INTERVAL[c.box] * DAY * 1.3; }
+  c.last = now;
+}
+
+/* ---------- readiness ---------- */
+const subjectExams = sid => Object.values(S.exams).filter(e => e.subjectId === sid).sort((a,b) => b.createdAt - a.createdAt);
+function topicStats(s){
+  const topics = new Set(s.topics || []);
+  (s.cards || []).forEach(c => c.topic && topics.add(c.topic));
+  const done = subjectExams(s.id).filter(e => e.submittedAt);
+  done.forEach(e => Object.keys(e.topicScores || {}).forEach(t => topics.add(t)));
+  const out = [];
+  for (const t of topics){
+    const cards = (s.cards || []).filter(c => c.topic === t);
+    const cardM = cards.length ? cards.reduce((a,c) => a + mastery(c), 0) / cards.length : null;
+    const ex = done.find(e => e.topicScores && e.topicScores[t] && e.topicScores[t].total > 0);
+    const examM = ex ? ex.topicScores[t].got / ex.topicScores[t].total : null;
+    const score = cardM != null && examM != null ? 0.4 * cardM + 0.6 * examM : (cardM ?? examM ?? 0) * 0.8;
+    out.push({ topic: t, cards: cards.length, cardM, examM, score });
+  }
+  return out.sort((a,b) => a.score - b.score);
+}
+function readiness(s){ const ts = topicStats(s); return ts.length ? ts.reduce((a,t) => a + t.score, 0) / ts.length : 0; }
+function grade(p, level){
+  if (level === "school") return p >= 85 ? "A" : p >= 70 ? "B" : p >= 55 ? "C" : p >= 40 ? "D" : "E";
+  return p >= 85 ? "7 · High Distinction" : p >= 75 ? "6 · Distinction" : p >= 65 ? "5 · Credit" : p >= 50 ? "4 · Pass" : "3 · Fail";
+}
+
+/* ---------- Claude calls ---------- */
+const ERR = {
+  not_granted: "Claude wasn't allowed for this page. Reload and choose Allow to use AI features.",
+  rate_limited: "Too many requests right now. Wait a minute, then try again.",
+  queue_overflow: "Too many requests right now. Wait a minute, then try again.",
+  prompt_too_large: "Your notes are too long for one go. Remove a file or add a focus topic, then try again.",
+  invalid_json: "Claude's answer came back in the wrong shape. Try again.",
+  refused: "Claude declined this request. Try different notes or settings.",
+  empty_completion: "Claude didn't write anything. Try asking for fewer items.",
+  session_expired: "Your session expired. Reload the page and try again.",
+  sampling_disabled: "AI features aren't set up yet. Add the AI_URL in config.js (see the README).",
+  images_unavailable: "Photos can't be sent from this view. Type your answer instead.",
+  image_rejected: "That photo couldn't be read. Try a clearer JPEG or PNG.",
+  upstream_error: "Connection problem. Try again."
+};
+const errMsg = e => (e && ERR[e.code]) || (e && e.code === "cancelled" ? "Stopped." : "Something went wrong. Try again.");
+async function ask(json, input, opts = {}){
+  if (!S.sample) throw { code: "sampling_disabled" };
+  const ctl = new AbortController(); if (S.busy) S.busy.ctl = ctl;
+  const o = Object.assign({ signal: ctl.signal, onText: ({ text }) => { const el = $("#busy-chars"); if (el) el.textContent = text.length ? "Writing… " + text.length.toLocaleString() + " characters" : "Thinking…"; } }, opts);
+  const r = json ? await S.sample.json(input, o) : await S.sample(input, o);
+  return json ? fixTex(r) : r;
+}
+const levelWord = s => s.level === "school" ? "high school" : "university";
+const MATH_RULE = 'Write ALL maths in LaTeX: inline inside \\( ... \\), display inside \\[ ... \\]. Use \\frac{a}{b} for fractions and ^{n} for powers. Never write fractions with "/" or powers with "^" outside LaTeX.';
+const JSON_TEX = ' Inside JSON strings, escape every backslash (write \\\\frac and \\\\( ).';
+function material(s, types, budget = 110000){
+  const srcs = Object.values(S.sources).filter(x => x.subjectId === s.id && (!types || types.includes(x.type))).sort((a,b) => b.createdAt - a.createdAt);
+  if (!srcs.length) return "";
+  const per = Math.floor(budget / srcs.length);
+  return srcs.map(x => "### " + x.type.toUpperCase().replace("_"," ") + ": " + x.title + "\n" + (x.text.length > per ? x.text.slice(0, per) + "\n[...cut for length]" : x.text)).join("\n\n");
+}
+
+/* ---------- files ---------- */
+async function pdfText(file){
+  if (!window.pdfjsLib) throw new Error("pdf");
+  const doc = await pdfjsLib.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false }).promise;
+  const out = [];
+  for (let p = 1; p <= Math.min(doc.numPages, 200); p++){
+    const tc = await (await doc.getPage(p)).getTextContent();
+    let line = ""; const lines = [];
+    for (const it of tc.items){ line += it.str; if (it.hasEOL){ lines.push(line); line = ""; } else line += " "; }
+    if (line.trim()) lines.push(line);
+    out.push(lines.join("\n").replace(/[ \t]+/g, " ").trim());
+  }
+  return out.join("\n\n").trim();
+}
+function newSource(s, type, title, text){
+  const src = { id: uid(), subjectId: s.id, type, title: title.slice(0, 120) || "Untitled", text: text.slice(0, 200000), createdAt: Date.now() };
+  S.sources[src.id] = src; store.save("src_" + src.id, src); return src;
+}
+async function addFiles(s, files, type){
+  if (!s || !files.length) return 0;
+  const images = []; let added = 0;
+  S.busy = { kind: "files", msg: "Reading your files" }; render();
+  try {
+    for (const f of files){
+      if (/^image\//.test(f.type)) { images.push(f); continue; }
+      const text = (f.type === "application/pdf" || /\.pdf$/i.test(f.name)) ? await pdfText(f) : await f.text();
+      if (!text.trim()){ toast(f.name + " has no readable text. If it's scanned, upload photos of the pages instead."); continue; }
+      newSource(s, type, f.name.replace(/\.[^.]+$/, ""), text); added++;
+    }
+    if (images.length){
+      if (!S.imgLimits) toast("Photos can't be read in this view. Upload a PDF or paste text instead.");
+      else {
+        const max = S.imgLimits.maxCount || 5;
+        for (let i = 0; i < images.length; i += max){
+          const batch = images.slice(i, i + max);
+          S.busy = { kind: "transcribe", msg: "Reading your photos (" + (i + 1) + "–" + (i + batch.length) + " of " + images.length + ")" }; render();
+          const r = await ask(false, "These " + batch.length + " images are photos of study notes or textbook pages for the " + levelWord(s) + " subject \"" + s.name + "\". Transcribe all of the text into clean plain text, in reading order, keeping headings and lists. " + MATH_RULE + " Describe any diagram in one short line in square brackets. Output only the transcription.", { images: batch });
+          newSource(s, type, batch.length === 1 ? batch[0].name.replace(/\.[^.]+$/, "") : "Photos " + (i + 1) + "–" + (i + batch.length), r.text); added++;
+        }
+      }
+    }
+  } catch(e){ S.error = e && e.code ? errMsg(e) : "Couldn't read that file. Try a PDF, .txt or .md file, or paste the text."; }
+  S.busy = null; render();
+  return added;
+}
+
+/* ---------- AI: notes, cards, exams ---------- */
+async function generateNotes(s, chain){
+  const mat = material(s, ["notes","outline","past_paper"]);
+  if (!mat){ S.error = "Add some material first."; render(); return false; }
+  S.busy = { kind: "notes", msg: chain ? "Step 1 of 2 · Writing your study notes" : "Writing your study notes" }; S.error = null; render();
+  try {
+    const r = await ask(false, `You are an expert ${levelWord(s)} tutor. Turn the study material below for "${s.name}" into clear, well-organised study notes a student can revise from.
+Use "## " headings for each topic and "### " for sub-topics. Under each, use short paragraphs and "- " bullet points. Bold the key terms with **double asterisks**.
+For every method or calculation, give the steps as a numbered list, then one short worked example.
+End with a "## Key formulas" section and a "## Common mistakes" section.
+${MATH_RULE}
+Only use what the material supports. Output only the notes.
+
+STUDY MATERIAL:
+${mat}`);
+    s.notes = { text: r.text.slice(0, 60000), createdAt: Date.now() }; saveSubject(s);
+    if (!chain){ S.tool = "notes"; toast("Study notes ready"); }
+    S.busy = null; render(); return true;
+  } catch(e){ if (e && e.code !== "cancelled") S.error = errMsg(e); S.busy = null; render(); return false; }
+}
+async function generateCards(s, chain){
+  const mat = material(s, ["notes","outline","past_paper"]);
+  if (!mat){ S.error = "Add some material first, then make cards."; render(); return false; }
+  const n = chain ? 20 : S.draft.cardsN, mix = chain ? "both" : S.draft.cardsMix, focus = chain ? "" : S.draft.cardsFocus.trim();
+  S.busy = { kind: "cards", msg: (chain ? "Step 2 of 2 · " : "") + "Making " + n + " flashcards" }; S.error = null; render();
+  try {
+    const existing = (s.cards || []).map(c => c.front).slice(-80).join(" | ");
+    const r = await ask(true, `You are an expert ${levelWord(s)} tutor writing study cards for the subject "${s.name}".
+From the study material below, write ${n} study cards.${focus ? ` Focus only on: ${focus}.` : ""}
+There are two kinds of card:
+- "concept": front = one clear question about a fact, definition or idea. back = a concise answer (1-4 sentences) that explains why, not just what.
+- "method": for any procedure, calculation or process a student must be able to carry out. front = the name of the process (for example "Finding a Thevenin equivalent"). steps = the ordered steps, each {"do": what to do, "why": a short explanation of why}. back = one sentence on when to use the method.
+Mix: ${mix === "concept" ? "concept cards only" : mix === "method" ? "method cards only" : "use method cards for every procedure or calculation in the material and concept cards for the rest"}.
+Put each card in a topic. Use 3-8 topics named the way the course would name them.${s.topics && s.topics.length ? " Reuse these existing topic names where they fit: " + s.topics.join(", ") + "." : ""}
+${existing ? "Do not repeat these existing cards: " + existing : ""}
+${MATH_RULE}${JSON_TEX}
+Only use what the material supports.
+Reply with only JSON: {"topics":["..."],"cards":[{"type":"concept","topic":"...","front":"...","back":"..."},{"type":"method","topic":"...","front":"...","back":"...","steps":[{"do":"...","why":"..."}]}]}
+
+STUDY MATERIAL:
+${mat}`);
+    const cards = (r.cards || []).filter(c => c && c.front).map(c => ({
+      id: uid(), type: c.type === "method" ? "method" : "concept", topic: String(c.topic || "General").slice(0, 60),
+      front: String(c.front), back: String(c.back || ""), steps: Array.isArray(c.steps) ? c.steps.map(x => ({ do: String(x.do ?? x.step ?? x), why: String(x.why ?? "") })) : [],
+      box: 0, due: 0, reviews: 0, createdAt: Date.now() }));
+    if (!cards.length) throw { code: "empty_completion" };
+    s.cards = (s.cards || []).concat(cards);
+    s.topics = Array.from(new Set([...(s.topics || []), ...(r.topics || []), ...cards.map(c => c.topic)])).slice(0, 20);
+    saveSubject(s); toast(cards.length + " new flashcards ready");
+    S.busy = null; render(); return true;
+  } catch(e){ if (e && e.code !== "cancelled") S.error = errMsg(e); S.busy = null; render(); return false; }
+}
+async function makeEverything(s){
+  if (await generateNotes(s, true)) { if (await generateCards(s, true)) { S.tool = "overview"; render(); toast("Your study set is ready"); } }
+}
+
+const LEN = {
+  quiz: { min: 10, q: "10", marks: 10, label: "Quick quiz · 10 questions" },
+  quick: { min: 15, q: "5-6", marks: 20, label: "Short · 15 min" },
+  standard: { min: 45, q: "8-10", marks: 50, label: "Standard · 45 min" },
+  full: { min: 120, q: "14-18", marks: 100, label: "Full · 2 hours" }
+};
+async function generateExam(s, isQuiz){
+  const notes = material(s, ["notes","outline"], 80000), past = material(s, ["past_paper"], 40000);
+  if (!notes && !past){ S.error = "Add notes or a past paper first."; render(); return; }
+  const d = S.draft, lenKey = isQuiz ? "quiz" : d.examLen, L = LEN[lenKey];
+  const topics = d.examTopics.length ? d.examTopics : null;
+  S.busy = { kind: "exam", msg: isQuiz ? "Writing a 10-question quiz" : "Writing your " + L.label.toLowerCase() + " practice exam" }; S.error = null; render();
+  try {
+    const types = isQuiz ? `Every question is "mcq" with 4 options, exactly one correct, worth 1 mark. Give "options" (array of 4 strings) and "correct" (0-3 index). Make the wrong options plausible mistakes a student would really make.`
+      : `Use a mix of question types that suits the subject:
+- "mcq": 4 options, exactly one correct. Give "options" (array of 4 strings) and "correct" (0-3 index).
+- "short": a short written or calculation answer.
+- "long": an extended answer or multi-step working.`;
+    const r = await ask(true, `You are an experienced ${levelWord(s)} examiner for the subject "${s.name}". Write a ${isQuiz ? "quick revision quiz" : "practice exam"}.
+Length: ${L.q} questions, ${L.marks} marks in total${isQuiz ? "" : `, to be finished in ${L.min} minutes`}.
+Difficulty: ${isQuiz ? "the same level as the real exam" : d.examDiff === "easier" ? "a little easier than the real exam, to build confidence" : d.examDiff === "harder" ? "harder than the real exam, to stretch the student" : "the same level as the real exam"}.
+${topics ? "Only cover these topics: " + topics.join(", ") + "." : "Cover the whole course."}
+${past && !isQuiz ? "Copy the style, question types, wording and mark weighting of the PAST PAPERS below so this feels like the real exam." : ""}
+${d.examPredict && !isQuiz ? "Predict the real exam: weight topics by how often and how heavily they appear in the past papers and course outline." : ""}
+${types}
+Every question gets: "id" (q1, q2, ...), "type", "topic" (use the course's topic names${s.topics && s.topics.length ? ", preferring: " + s.topics.join(", ") : ""}), "marks", "question", "answer" (the model answer), "solution" (a worked solution with numbered steps showing the working${isQuiz ? ", kept short" : ""})${isQuiz ? "" : ', and for short/long "rubric" (array of {"point","marks"} that adds up to the question\'s marks, giving marks for correct working, not only the final answer)'}.
+${MATH_RULE}${JSON_TEX}
+Reply with only JSON: {"title":"...","minutes":${L.min},"questions":[...]}
+
+${notes ? "COURSE MATERIAL:\n" + notes : ""}
+
+${past ? "PAST PAPERS:\n" + past : ""}`, { modelTier: lenKey === "full" ? "complex" : "default" });
+    const qs = (r.questions || []).filter(q => q && q.question).map((q, i) => ({
+      id: "q" + (i + 1), type: ["mcq","short","long"].includes(q.type) ? q.type : "short", topic: String(q.topic || "General").slice(0, 60),
+      marks: Math.max(1, Math.round(+q.marks || 1)), question: String(q.question), options: Array.isArray(q.options) ? q.options.map(String) : null,
+      correct: Number.isInteger(+q.correct) ? +q.correct : null, answer: String(q.answer || ""), solution: String(q.solution || ""),
+      rubric: Array.isArray(q.rubric) ? q.rubric.map(x => ({ point: String(x.point || ""), marks: +x.marks || 0 })) : []
+    })).map(q => (q.type === "mcq" && !(q.options && q.options.length >= 2 && q.correct != null)) ? Object.assign(q, { type: "short" }) : q);
+    if (!qs.length) throw { code: "empty_completion" };
+    const ex = { id: uid(), subjectId: s.id, createdAt: Date.now(), title: String(r.title || s.name + (isQuiz ? " quiz" : " practice exam")), minutes: +r.minutes || L.min, kind: isQuiz ? "quiz" : "exam",
+      settings: { len: lenKey, diff: d.examDiff, mode: isQuiz ? "quiz" : d.examMode, predict: d.examPredict, topics: topics || [] }, questions: qs, answers: {}, results: {}, submittedAt: null };
+    S.exams[ex.id] = ex; store.save("exam_" + ex.id, ex);
+    s.topics = Array.from(new Set([...(s.topics || []), ...qs.map(q => q.topic)])).slice(0, 20); saveSubject(s);
+    S.busy = null; startExam(ex.id); return;
+  } catch(e){ if (e && e.code !== "cancelled") S.error = errMsg(e); }
+  S.busy = null; render();
+}
+
+/* ---------- exam running ---------- */
+let timerId = null;
+const fmtClock = ms => { const t = Math.max(0, Math.floor(ms / 1000)); const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), sec = t % 60; return (h ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0"); };
+function startExam(id){
+  S.run = { id, idx: 0, started: Date.now(), answers: {}, photos: {}, reveal: {}, confirmSubmit: false };
+  S.view = "exam"; render(); window.scrollTo(0, 0);
+  clearInterval(timerId); timerId = setInterval(tick, 1000);
+}
+function tick(){
+  if (S.view !== "exam" || !S.run){ clearInterval(timerId); return; }
+  const ex = S.exams[S.run.id]; const el = $("#timer"); if (!el) return;
+  if (ex.settings.mode !== "exam"){ el.textContent = fmtClock(Date.now() - S.run.started); return; }
+  const left = ex.minutes * 60000 - (Date.now() - S.run.started);
+  el.textContent = left > 0 ? fmtClock(left) : "Time's up"; el.classList.toggle("low", left < 5 * 60000);
+}
+const isAnswered = q => { const x = S.run.answers[q.id]; return !!((x && (x.choice != null || (x.text || "").trim())) || S.run.photos[q.id]); };
+async function submitExam(){
+  const ex = S.exams[S.run.id], run = S.run, s = S.subjects[ex.subjectId];
+  clearInterval(timerId);
+  ex.answers = run.answers; ex.timeTaken = Date.now() - run.started;
+  const results = {};
+  for (const q of ex.questions) if (q.type === "mcq"){ const a = run.answers[q.id]; const right = a && a.choice === q.correct; results[q.id] = { awarded: right ? q.marks : 0, feedback: a && a.choice != null ? (right ? "Correct." : "Not this one. The correct option is " + String.fromCharCode(65 + q.correct) + ".") : "Not answered." }; }
+  const written = ex.questions.filter(q => q.type !== "mcq");
+  const unanswered = written.filter(q => !isAnswered(q)); unanswered.forEach(q => results[q.id] = { awarded: 0, feedback: "Not answered." });
+  const toMark = written.filter(q => !unanswered.includes(q));
+  const textOnly = toMark.filter(q => !run.photos[q.id]), withPhoto = toMark.filter(q => run.photos[q.id]);
+  if (toMark.length){ S.view = "marking"; S.busy = { kind: "mark", msg: "Marking " + toMark.length + " written answer" + (toMark.length === 1 ? "" : "s") }; render(); }
+  const markPrompt = (qs, photoNote) => `You are a fair, encouraging ${levelWord(s)} examiner for "${s.name}". Mark each answer against its rubric and model answer.
+Give part marks for correct working and method even when the final answer is wrong. Never give more than the question's marks. Marks may be whole or half numbers.
+For each answer write "feedback" in 1-3 sentences, speaking to the student: what they got right, and exactly what was missing or wrong.
+${photoNote || ""}
+${MATH_RULE}${JSON_TEX}
+Reply with only JSON: {"results":[{"id":"q1","awarded":3,"feedback":"..."}]}
+
+ANSWERS TO MARK:
+${JSON.stringify(qs.map(q => ({ id: q.id, question: q.question, marks: q.marks, rubric: q.rubric, model_answer: q.answer, student_answer: (run.answers[q.id] && run.answers[q.id].text) || "" })), null, 1)}`;
+  const apply = (r, qs) => { for (const x of (r.results || [])){ const q = qs.find(q => q.id === x.id); if (q) results[q.id] = { awarded: clamp(Math.round((+x.awarded || 0) * 2) / 2, 0, q.marks), feedback: String(x.feedback || "") }; } };
+  try {
+    if (textOnly.length) apply(await ask(true, markPrompt(textOnly)), textOnly);
+    for (const q of withPhoto){ S.busy.msg = "Marking your handwritten working for " + q.id.toUpperCase(); render();
+      apply(await ask(true, markPrompt([q], "The attached image is the student's handwritten working for this question. Read it carefully and mark it together with any typed answer."), { images: [run.photos[q.id]] }), [q]); }
+  } catch(e){ if (e && e.code !== "cancelled") S.error = errMsg(e) + " Unmarked answers show 0 for now."; }
+  for (const q of toMark) if (!results[q.id]) results[q.id] = { awarded: 0, feedback: "Couldn't be marked automatically. Compare with the worked solution." };
+  ex.results = results; ex.submittedAt = Date.now();
+  ex.total = ex.questions.reduce((a,q) => a + q.marks, 0); ex.score = ex.questions.reduce((a,q) => a + (results[q.id] ? results[q.id].awarded : 0), 0);
+  ex.photoIds = Object.keys(run.photos); ex.topicScores = {};
+  for (const q of ex.questions){ const t = ex.topicScores[q.topic] || (ex.topicScores[q.topic] = { got: 0, total: 0 }); t.total += q.marks; t.got += results[q.id] ? results[q.id].awarded : 0; }
+  store.save("exam_" + ex.id, ex); logMinutes(ex.timeTaken / 60000);
+  S.busy = null; S.run = null; S.resultId = ex.id; S.view = "result"; render(); window.scrollTo(0, 0);
+}
+function mistakesToCards(exId){
+  const ex = S.exams[exId], s = S.subjects[ex.subjectId]; let n = 0;
+  for (const q of ex.questions){
+    const r = ex.results[q.id]; if (!r || r.awarded >= q.marks || (ex.madeCards || []).includes(q.id)) continue;
+    const opts = q.type === "mcq" && q.options ? "\n" + q.options.map((o,i) => String.fromCharCode(65+i) + ") " + o).join("\n") : "";
+    (s.cards = s.cards || []).push({ id: uid(), type: "concept", topic: q.topic, front: q.question + opts, back: (q.answer ? "**Answer:** " + q.answer + "\n\n" : "") + q.solution, steps: [], box: 0, due: 0, reviews: 0, createdAt: Date.now(), fromExam: ex.id });
+    (ex.madeCards = ex.madeCards || []).push(q.id); n++;
+  }
+  saveSubject(s); store.save("exam_" + ex.id, ex);
+  toast(n ? n + " mistake" + (n > 1 ? "s" : "") + " added to your flashcards" : "No new mistakes to add"); render();
+}
+
+/* ---------- study session ---------- */
+function startStudy(sid, filter){
+  const s = S.subjects[sid]; let cards = (s.cards || []).slice();
+  if (filter && filter.topic) cards = cards.filter(c => c.topic === filter.topic);
+  if (filter && filter.due) cards = cards.filter(isDue);
+  if (!cards.length){ toast(filter && filter.due ? "No cards are due. Try Study all." : "No cards here yet"); return; }
+  cards.sort((a,b) => (isDue(b) - isDue(a)) || ((a.box||0) - (b.box||0)) || ((a.due||0) - (b.due||0)));
+  cards = cards.slice(0, 40);
+  S.session = { sid, queue: cards.map(c => c.id), done: 0, known: 0, total: cards.length, flipped: false, explain: null, started: Date.now(), label: filter && filter.topic ? filter.topic : filter && filter.due ? "Due cards" : "All cards" };
+  S.view = "study"; render(); window.scrollTo(0, 0);
+}
+function endStudy(){ if (S.session){ logMinutes((Date.now() - S.session.started) / 60000); S.subjectId = S.session.sid; } S.session = null; S.view = S.subjectId ? "set" : "dashboard"; S.tool = "flashcards"; render(); }
+function doRate(r){
+  const ss = S.session, s = S.subjects[ss.sid]; const c = s.cards.find(x => x.id === ss.queue[0]);
+  rateCard(c, r); ss.queue.shift();
+  if (r === "again") ss.queue.splice(Math.min(3, ss.queue.length), 0, c.id); else { ss.done++; if (r !== "hard") ss.known++; }
+  ss.flipped = false; ss.explain = null; saveSubject(s); render();
+}
+async function explainCard(){
+  const ss = S.session, s = S.subjects[ss.sid]; const c = s.cards.find(x => x.id === ss.queue[0]);
+  ss.explain = { text: "" }; render();
+  const content = c.front + "\n" + (c.steps || []).map((x, i) => (i + 1) + ". " + x.do + (x.why ? " (" + x.why + ")" : "")).join("\n") + "\n" + c.back;
+  try {
+    await S.sample("A " + levelWord(s) + " student studying \"" + s.name + "\" doesn't quite get this flashcard. Explain it a different way, in plain words, with one small concrete example" + (c.type === "method" ? " worked through the steps" : "") + ". Under 150 words. Use short paragraphs or a numbered list. " + MATH_RULE + "\n\nCARD:\n" + content, {
+      onText: ({ text }) => { if (S.session === ss && ss.explain){ ss.explain.text = text; const el = $("#explain-out"); if (el) el.innerHTML = rich(text); } } });
+  } catch(e){ if (S.session === ss && ss.explain){ ss.explain.text = (e && e.text) || errMsg(e); const el = $("#explain-out"); if (el) el.innerHTML = rich(ss.explain.text); } }
+}
+
+/* ---------- tutor ---------- */
+async function sendChat(text){
+  const s = S.subjects[S.subjectId]; text = text.trim(); if (!text || S.chatBusy) return;
+  s.chat = (s.chat || []).concat({ role: "user", content: text });
+  const reply = { role: "assistant", content: "" }; s.chat.push(reply); S.chatBusy = true; render(); scrollChat();
+  const mat = material(s, ["notes","outline","past_paper"], 70000) + (s.notes ? "\n\n### STUDY NOTES\n" + s.notes.text.slice(0, 20000) : "");
+  const rules = `You are a friendly, patient ${levelWord(s)} tutor for the subject "${s.name}". Answer the student's questions using their course material below. Explain step by step at their level, give a small example when it helps, and keep answers under 250 words unless they ask for more. If they ask you to just give an answer to a problem, show the working so they learn the method. If something isn't in the material, say so, then help from general knowledge. ${MATH_RULE}
+
+COURSE MATERIAL:
+${mat || "(No material uploaded yet.)"}`;
+  const turns = s.chat.slice(0, -1).slice(-12);
+  if (turns[0] && turns[0].role !== "user") turns.shift();
+  try {
+    const r = await S.sample([{ role: "user", content: rules }, { role: "assistant", content: "Got it. What would you like help with?" }, ...turns.map(t => ({ role: t.role, content: t.content }))], {
+      cache: false, onText: ({ text }) => { reply.content = text; const el = $("#last-ai"); if (el) el.innerHTML = rich(text); scrollChat(); } });
+    reply.content = r.text;
+  } catch(e){ reply.content = (e && e.text ? e.text + "\n\n" : "") + "_" + errMsg(e) + "_"; }
+  if (!S.sample) reply.content = ERR.sampling_disabled;
+  s.chat = s.chat.slice(-30); S.chatBusy = false; saveSubject(s); render(); scrollChat();
+}
+function scrollChat(){ const el = $("#chat-end"); if (el) el.scrollIntoView({ block: "end" }); }
+
+/* ---------- example set ---------- */
+function loadExample(){
+  if (store.needsLogin()){ S.afterLogin = { example: true }; S.view = "login"; render(); return; }
+  const s = { id: uid(), name: "Electric Circuits (example)", level: "uni", examDate: new Date(Date.now() + 18 * DAY).toISOString().slice(0, 10), createdAt: Date.now(), example: true, folder: null,
+    topics: ["Ohm's law and power", "Thevenin and Norton", "RC transients", "Nodal analysis"], cards: [] };
+  const C = (type, topic, front, back, steps, box) => ({ id: uid(), type, topic, front, back, steps: steps || [], box: box || 0, due: box ? Date.now() + (box - 2) * DAY : 0, reviews: box ? 2 : 0, createdAt: Date.now() });
+  s.cards = [
+    C("method", "Thevenin and Norton", "Finding a Thevenin equivalent", "Use it to replace a whole network with one source and one resistor as seen by a load.", [
+      { do: "Remove the load and mark the two terminals A and B.", why: "The equivalent describes the circuit as seen from those terminals." },
+      { do: "Find the open-circuit voltage \\(V_{th} = V_{AB}\\).", why: "With no load current, this is the voltage the source must supply." },
+      { do: "Turn off independent sources: voltage sources become shorts, current sources become opens.", why: "This leaves only the resistance the network presents." },
+      { do: "Find \\(R_{th}\\) looking into A and B.", why: "This is the series resistance of the equivalent." },
+      { do: "Reconnect the load to \\(V_{th}\\) in series with \\(R_{th}\\).", why: "One loop now gives the load current \\(I = \\frac{V_{th}}{R_{th} + R_L}\\)." }], 3),
+    C("method", "RC transients", "Solving a first-order RC step response", "Use it whenever a capacitor charges or discharges after a switch changes.", [
+      { do: "Find the initial capacitor voltage \\(v(0)\\) from the circuit before the switch.", why: "Capacitor voltage can't change instantly." },
+      { do: "Find the final voltage \\(v(\\infty)\\) with the capacitor treated as an open circuit.", why: "At DC steady state no current flows into a capacitor." },
+      { do: "Find the time constant \\(\\tau = R_{th} C\\), using the Thevenin resistance seen by the capacitor.", why: "It sets how fast the response settles." },
+      { do: "Write \\(v(t) = v(\\infty) + \\left[v(0) - v(\\infty)\\right] e^{-\\frac{t}{\\tau}}\\).", why: "Every first-order response has this shape." }], 1),
+    C("concept", "Ohm's law and power", "What power does a resistor absorb in terms of its current?", "\\(P = I^{2} R\\). It comes from \\(P = VI\\) with \\(V = IR\\), so doubling the current quadruples the power.", null, 4),
+    C("concept", "RC transients", "How long does an RC circuit take to reach about 99% of its final value?", "About \\(5\\tau\\). After each time constant the remaining gap shrinks to \\(e^{-1}\\), roughly 37%, of what it was.", null, 0),
+    C("concept", "Nodal analysis", "What law is nodal analysis built on?", "Kirchhoff's Current Law: the currents leaving any node add up to zero, because charge can't build up at a node.", null, 2),
+    C("method", "Nodal analysis", "Doing nodal analysis", "Use it to find node voltages in circuits with several sources.", [
+      { do: "Pick a reference node (ground) and label every other node voltage.", why: "Each unknown voltage is measured against ground." },
+      { do: "At each unknown node, write KCL with each branch current as \\(\\frac{V_a - V_b}{R}\\).", why: "Expressing currents in voltages leaves only voltage unknowns." },
+      { do: "Solve the simultaneous equations.", why: "One equation per unknown node gives a solvable system." }], 0)
+  ];
+  s.notes = { createdAt: Date.now(), text: "## Thevenin and Norton\nAny linear two-terminal network can be replaced by a **voltage source** \\(V_{th}\\) in series with a **resistance** \\(R_{th}\\).\n- \\(V_{th}\\) is the open-circuit voltage at the terminals.\n- \\(R_{th}\\) is the resistance seen at the terminals with independent sources turned off.\n- Norton form: current source \\(I_N = I_{sc}\\) in parallel with \\(R_N = R_{th}\\).\n## RC transients\nA capacitor's voltage can't change instantly. For a step input:\n\\[v(t) = v(\\infty) + \\left[v(0) - v(\\infty)\\right] e^{-\\frac{t}{\\tau}}\\]\nwith \\(\\tau = R C\\). After \\(5\\tau\\) the circuit has settled.\n## Key formulas\n- \\(P = VI = I^{2} R = \\frac{V^{2}}{R}\\)\n- Maximum power transfer when \\(R_L = R_{th}\\), giving \\(P_{max} = \\frac{V_{th}^{2}}{4 R_{th}}\\)\n## Common mistakes\n- Forgetting to turn off sources before finding \\(R_{th}\\).\n- Using the wrong resistance in \\(\\tau\\): it must be the Thevenin resistance seen by the capacitor." };
+  S.subjects[s.id] = s; saveSubject(s);
+  newSource(s, "notes", "Week 6 lecture notes (example)", "Thevenin's theorem: any linear two-terminal network can be replaced by a voltage source Vth in series with a resistance Rth. Vth is the open-circuit voltage at the terminals. Rth is found by turning off independent sources and finding the resistance seen at the terminals, or as Voc divided by Isc.\nNorton's theorem: the same network can be replaced by a current source In = Isc in parallel with Rn = Rth.\nRC circuits: a capacitor's voltage cannot change instantaneously. For a step input, v(t) = v(inf) + [v(0) - v(inf)] e^(-t/tau), with tau = R C where R is the Thevenin resistance seen by the capacitor. After 5 tau the circuit is considered settled.\nPower: P = V I = I^2 R = V^2 / R. Maximum power transfer occurs when RL = Rth, giving Pmax = Vth^2 / (4 Rth).\nNodal analysis: choose a reference node, write KCL at each non-reference node using Ohm's law for the branch currents, then solve the simultaneous equations. A voltage source between two non-reference nodes forms a supernode.");
+  enterApp("set", s.id); toast("Example study set added");
+}
+function enterApp(view, sid){
+  if (store.needsLogin()){ S.afterLogin = { view: view || "dashboard", sid }; S.view = "login"; render(); window.scrollTo(0, 0); return; }
+  if (!S.profile.seenLanding){ S.profile.seenLanding = true; saveProfile(); }
+  S.view = view || "dashboard"; if (sid){ S.subjectId = sid; S.tool = "overview"; }
+  S.error = null; S.confirm = null; render(); window.scrollTo(0, 0);
+}
+
+/* ---------- small view helpers ---------- */
+const meter = (p, cls) => '<div class="meter ' + (cls || tone(p)) + '" role="img" aria-label="' + p + '%"><i style="width:' + clamp(p,0,100) + '%"></i></div>';
+function busyBox(){
+  if (!S.busy) return "";
+  const canStop = S.busy.kind !== "files";
+  return '<div class="busy" role="status"><div class="spin"></div><div style="flex:1;min-width:0"><b>' + esc(S.busy.msg) + '</b><p class="small muted" id="busy-chars">' + (S.busy.kind === "files" ? "One moment." : "Thinking… this can take up to a minute.") + '</p></div>' + (canStop ? '<button class="btn small" data-act="stop">Stop</button>' : "") + '</div>';
+}
+const errBox = () => S.error ? '<div class="notice bad row between" role="alert"><span>' + esc(S.error) + '</span><button class="btn small ghost" data-act="clear-err">Dismiss</button></div>' : "";
+const setsSorted = () => Object.values(S.subjects).sort((a,b) => (daysUntil(a.examDate) ?? 9999) - (daysUntil(b.examDate) ?? 9999) || a.createdAt - b.createdAt);
+const sourcesOf = s => Object.values(S.sources).filter(x => x.subjectId === s.id).sort((a,b) => b.createdAt - a.createdAt);
+const aiOff = () => S.sample ? "" : '<p class="small muted">AI features aren’t switched on for this site yet.</p>';
+
+/* ---------- landing ---------- */
+function vLanding(){
+  const hasSets = Object.keys(S.subjects).length > 0;
+  const demo = '<div class="hero-demo" aria-hidden="true">' +
+    '<div class="demo-card c1"><div class="row between"><span class="type-tag method">Method · say the steps</span><span class="small muted">RC transients</span></div><b style="font-family:var(--f-display);font-size:1.15rem">Solving a first-order RC step response</b><ol class="steps"><li><div class="small rich">' + rich("Find \\(v(0)\\) before the switch") + '</div></li><li><div class="small rich">' + rich("Find \\(v(\\infty)\\) at steady state") + '</div></li><li><div class="small rich">' + rich("Set \\(\\tau = R_{th} C\\)") + '</div></li></ol></div>' +
+    '<div class="demo-card c2"><span class="label">Practice exam · marked</span><div class="row between"><span class="score-big" style="font-size:2.4rem">78%</span><span class="chip good">Grade 6</span></div><p class="small">You lost the most marks on <span class="hl">Thevenin circuits</span>.</p></div>' +
+    '<div class="demo-card c3"><div class="row between"><b>Digital Systems</b><span class="chip warn">12 days</span></div><div class="row between small"><span class="muted">Readiness</span><b class="mono">64%</b></div>' + meter(64) + '</div></div>';
+  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button><nav class="site-links"><a class="btn ghost small" href="#how">How it works</a><a class="btn ghost small" href="#features">Features</a>' + (hasSets ? '<button class="btn small primary" data-act="enter">Open my study sets</button>' : '<button class="btn small primary" data-act="new-set">Start studying</button>') + '</nav></div></header>' +
+    '<main><div class="wrap"><section class="hero"><div class="stack" style="gap:20px"><span class="chip acc" style="align-self:flex-start">For school and uni students</span><h1>Turn your notes into a plan that gets you <span class="hl">exam ready</span>.</h1><p class="lede">Upload your lecture slides, notes or past papers. Exam Ready writes your study notes, flashcards and practice exams, marks your answers, and tells you exactly what to study each day.</p><div class="hero-cta"><button class="btn primary big" data-act="new-set">Create a study set</button><button class="btn big" data-act="example">Try an example</button></div><p class="small muted">Free to try · Works on phone and laptop · Maths shown properly</p></div>' + demo + '</section>' +
+    '<section class="band" id="how"><h2>How it works</h2><ol class="howto" style="padding:0;margin:0"><li><b>Upload your material</b><span class="muted small">PDF slides, typed notes, photos of textbook pages, past papers or the course outline.</span></li><li><b>Get your study set</b><span class="muted small">Study notes, flashcards with step-by-step method cards, quizzes and practice exams, all from your course.</span></li><li><b>Follow your daily plan</b><span class="muted small">See what to study today, sit marked practice exams, and watch your readiness score climb before exam day.</span></li></ol></section>' +
+    '<section class="band" id="features"><h2>Everything you need before an exam</h2><div class="features">' + [
+      ["N", "AI study notes", "Clean revision notes with headings, key formulas and common mistakes, written from your own slides."],
+      ["F", "Flashcards that teach", "Concept cards for facts, and method cards with numbered steps and why each step matters."],
+      ["Q", "Quick quizzes", "Ten-question quizzes with instant feedback and worked solutions."],
+      ["E", "Marked practice exams", "Timed exams in your course's style. Part marks for working, feedback on every answer, and an estimated grade."],
+      ["T", "AI tutor", "Ask anything about your course and get a step-by-step explanation at your level."],
+      ["%", "Readiness score", "Know how ready you are for each exam and which topic to fix first."]
+    ].map(f => '<div class="feature"><span class="ico">' + f[0] + '</span><h3>' + f[1] + '</h3><p class="small muted">' + f[2] + '</p></div>').join("") + '</div></section>' +
+    '<section class="band"><h2>Built for real exams</h2><div style="overflow-x:auto"><table class="compare"><thead><tr><th>What you get</th><th>Typical flashcard app</th><th>Exam Ready</th></tr></thead><tbody>' + [
+      ["Flashcards from your notes", "y", "y"], ["Step-by-step method cards for maths and science", "n", "y"], ["Practice exams in your course's style", "n", "y"], ["Marking with part marks for working", "n", "y"], ["Daily study plan to your exam date", "n", "y"], ["Readiness score per topic", "n", "y"]
+    ].map(r => '<tr><td>' + r[0] + '</td><td class="' + r[1] + '">' + (r[1] === "y" ? "Yes" : "No") + '</td><td class="' + r[2] + '">Yes</td></tr>').join("") + '</tbody></table></div><button class="btn primary big" data-act="new-set" style="align-self:flex-start">Create your first study set</button></section></div></main>' +
+    '<footer class="site-foot"><div class="wrap row between"><span>Exam Ready · Version 1</span><span>Made for students who want to walk into exams prepared.</span></div></footer>';
+}
+
+/* ---------- app shell ---------- */
+function shell(content){
+  const sets = setsSorted();
+  const cur = v => (S.view === v || (v === "library" && ["set","study","exam","result","marking"].includes(S.view) && false)) ? "page" : "false";
+  const folders = S.profile.folders || [];
+  const sideSets = sets.slice(0, 12).map(s => '<button class="side-set" data-act="open-set" data-sid="' + s.id + '" aria-current="' + (S.subjectId === s.id && S.view === "set" ? "page" : "false") + '"><span class="fdot" style="background:' + folderColor(folderOf(s)) + '"></span><span class="t">' + esc(s.name) + '</span></button>').join("");
+  const storeNote = store.mode === "cloud" && store.user ? esc(store.user.email || "Signed in") + ' · <button class="btn small ghost" data-act="signout" style="padding:2px 6px">Sign out</button>' : store.mode === "local" ? "Saved in this browser only" : "Not saved in this view";
+  return '<div class="shell"><aside class="side"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button>' +
+    '<button class="btn primary new-btn" data-act="new-set">+ New study set</button>' +
+    '<button class="side-link" data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">◷</span>Today</button>' +
+    '<button class="side-link" data-act="go" data-view="library" aria-current="' + cur("library") + '"><span class="ic">▤</span>Library</button>' +
+    '<button class="side-link" data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">%</span>Progress</button>' +
+    (sets.length ? '<div class="side-sec"><span class="label">Study sets</span></div>' + sideSets : "") +
+    '<div class="side-foot">' + storeNote + '</div></aside>' +
+    '<div class="main"><div class="main-in">' + content + '</div></div>' +
+    '<nav class="tabbar" aria-label="Main"><button data-act="go" data-view="dashboard" aria-current="' + cur("dashboard") + '"><span class="ic">◷</span>Today</button><button data-act="go" data-view="library" aria-current="' + (["library","set"].includes(S.view) ? "page" : "false") + '"><span class="ic">▤</span>Library</button><button class="plus" data-act="new-set"><span class="ic">+</span>New</button><button data-act="go" data-view="progress" aria-current="' + cur("progress") + '"><span class="ic">%</span>Progress</button></nav></div>';
+}
+
+/* ---------- dashboard ---------- */
+function planFor(){
+  const items = [];
+  for (const s of setsSorted()){
+    const d = daysUntil(s.examDate); if (d != null && d < 0) continue;
+    const cards = s.cards || []; const due = cards.filter(isDue).length;
+    const reviewedToday = cards.filter(c => c.last && new Date(c.last).toDateString() === new Date().toDateString()).length;
+    const srcs = sourcesOf(s).length;
+    if (!srcs && !cards.length){ items.push({ html: "Upload notes for " + esc(s.name) + " to get started", act: "open-set", sid: s.id, est: 2 }); continue; }
+    if (!cards.length){ items.push({ html: "Make your " + esc(s.name) + " study set", act: "open-set", sid: s.id, est: 2 }); continue; }
+    items.push({ done: due === 0 && reviewedToday > 0, html: due ? "Review <b>" + due + "</b> due flashcard" + (due > 1 ? "s" : "") + " in " + esc(s.name) : "All " + esc(s.name) + " flashcards reviewed", act: due ? "study-due" : null, sid: s.id, est: Math.ceil(due * 0.5) });
+    const weak = topicStats(s).find(t => t.cards && t.score < 0.7);
+    if (weak) items.push({ html: "Practise your weakest topic: <span class=\"hl\">" + esc(weak.topic) + "</span> <span class=\"muted\">(" + esc(s.name) + ")</span>", act: "study-topic", sid: s.id, topic: weak.topic, est: 10 });
+    const last = subjectExams(s.id).find(e => e.submittedAt && e.kind !== "quiz");
+    const sinceLast = last ? (Date.now() - last.submittedAt) / DAY : 99;
+    if ((d != null && d <= 21 && sinceLast > 4) || !last) items.push({ done: !!(last && new Date(last.submittedAt).toDateString() === new Date().toDateString()), html: "Sit a " + (d != null && d <= 7 ? "full" : "standard") + " practice exam for " + esc(s.name), act: "tool", tool: "exams", sid: s.id, est: d != null && d <= 7 ? 120 : 45 });
+    if (items.length >= 7) break;
+  }
+  return items;
+}
+function vDashboard(){
+  const sets = setsSorted(), now = new Date();
+  const head = '<div class="stack" style="gap:4px"><span class="label">' + esc(now.toLocaleDateString(undefined, { weekday:"long", day:"numeric", month:"long" })) + '</span><h1>Today</h1></div>';
+  if (!sets.length) return head + errBox() + '<div class="empty"><h2>Make your first study set</h2><p class="muted" style="max-width:60ch">A study set is one subject or exam. Upload your slides or notes and Exam Ready makes study notes, flashcards, quizzes and practice exams from them. Your daily plan shows up here.</p><div class="row"><button class="btn primary" data-act="new-set">+ New study set</button><button class="btn" data-act="example">Try an example</button></div></div>';
+  const upcoming = sets.filter(s => s.examDate && daysUntil(s.examDate) >= 0);
+  const strip = upcoming.length ? '<div class="strip">' + upcoming.map(s => { const d = daysUntil(s.examDate), r = pct(readiness(s)); return '<button class="exam-tile" data-act="open-set" data-sid="' + s.id + '"><span class="label">Exam · ' + esc(fmtDate(s.examDate)) + '</span><b>' + esc(s.name) + '</b><div class="row between"><span class="days">' + (d === 0 ? "Today" : d + '<span class="small muted" style="font-family:var(--f-body);font-weight:400"> day' + (d === 1 ? "" : "s") + '</span>') + '</span><span class="chip ' + tone(r) + '">' + r + '% ready</span></div>' + meter(r) + '</button>'; }).join("") + '</div>' : "";
+  const items = planFor(), totalEst = items.filter(i => !i.done).reduce((a,i) => a + (i.est || 0), 0);
+  const plan = '<section class="sheet"><div class="row between"><h2>Your plan for today</h2><span class="chip acc mono">≈ ' + totalEst + ' min</span></div>' + (items.length ? '<ul class="plan">' + items.map(i => '<li class="' + (i.done ? "done" : "") + '"><span class="tick" aria-hidden="true">' + (i.done ? "✓" : "") + '</span><span class="what">' + i.html + '</span>' + (i.act && !i.done ? '<button class="btn small" data-act="' + i.act + '" data-sid="' + i.sid + '"' + (i.topic ? ' data-topic="' + esc(i.topic) + '"' : "") + (i.tool ? ' data-tool="' + i.tool + '"' : "") + '>Start</button>' : "") + '</li>').join("") + '</ul>' : '<p class="muted">You’re up to date. Add more notes or sit a practice exam to keep your readiness climbing.</p>') + '</section>';
+  const all = sets.flatMap(s => s.cards || []);
+  const stats = '<section class="sheet"><h2>This week</h2><div class="stats"><div class="stat"><b>' + streak() + '</b><span class="small muted">day streak</span></div><div class="stat"><b>' + weekMinutes() + '</b><span class="small muted">minutes studied</span></div><div class="stat"><b>' + all.filter(c => (c.box || 0) >= 4).length + '<span class="small muted" style="font-weight:400">/' + all.length + '</span></b><span class="small muted">cards mastered</span></div></div></section>';
+  const weakest = sets.map(s => ({ s, t: topicStats(s)[0] })).filter(x => x.t).slice(0, 3);
+  const weak = weakest.length ? '<section class="sheet"><h2>Weakest topics</h2><div class="stack">' + weakest.map(x => '<div class="stack" style="gap:6px"><div class="row between"><span><b>' + esc(x.t.topic) + '</b> <span class="small muted">' + esc(x.s.name) + '</span></span><span class="mono small">' + pct(x.t.score) + '%</span></div>' + meter(pct(x.t.score)) + '</div>').join("") + '</div></section>' : "";
+  return head + errBox() + strip + '<div class="grid2"><div class="stack" style="gap:20px">' + plan + '</div><div class="stack" style="gap:20px">' + stats + weak + '</div></div>';
+}
+
+/* ---------- library ---------- */
+function setCard(s){
+  const r = pct(readiness(s)), d = daysUntil(s.examDate), n = (s.cards || []).length, due = (s.cards || []).filter(isDue).length, f = folderOf(s);
+  return '<button class="set-card" style="--fc:' + folderColor(f) + '" data-act="open-set" data-sid="' + s.id + '"><div class="row between"><span class="label">' + (f ? esc(f.name) : s.level === "school" ? "High school" : "University") + '</span>' + (d != null ? '<span class="chip ' + (d < 0 ? "" : d <= 7 ? "bad" : d <= 21 ? "warn" : "") + '">' + (d < 0 ? "Exam passed" : d === 0 ? "Exam today" : d + " days") + '</span>' : "") + '</div><h3>' + esc(s.name) + '</h3><div class="row between small"><span class="muted">' + n + ' cards · ' + due + ' due · ' + sourcesOf(s).length + ' files</span><b class="mono">' + r + '%</b></div>' + meter(r) + '</button>';
+}
+function vLibrary(){
+  const folders = S.profile.folders || [], ff = S.folderFilter;
+  let sets = setsSorted(); if (ff !== "all") sets = sets.filter(s => (ff === "none" ? !s.folder : s.folder === ff));
+  const D = S.draft;
+  const folderBar = '<div class="folders"><button class="folder-btn" aria-pressed="' + (ff === "all") + '" data-act="ffilter" data-f="all">All sets</button>' + folders.map(f => '<button class="folder-btn" aria-pressed="' + (ff === f.id) + '" data-act="ffilter" data-f="' + f.id + '"><span class="fdot" style="background:' + folderColor(f) + '"></span>' + esc(f.name) + '</button>').join("") + (folders.length ? '<button class="folder-btn" aria-pressed="' + (ff === "none") + '" data-act="ffilter" data-f="none">No folder</button>' : "") + '</div>';
+  const newFolder = '<details><summary>New folder</summary><form id="new-folder" class="row" style="margin-top:10px"><input type="text" id="nf-name" placeholder="e.g. Trimester 2" maxlength="40" style="max-width:240px" required><div class="row" style="gap:6px" role="group" aria-label="Folder colour">' + FOLDER_COLORS.map((c, i) => '<button type="button" class="fdot" data-act="nf-color" data-i="' + i + '" aria-label="Colour ' + (i + 1) + '" aria-pressed="' + (D.newFolderColor === i) + '" style="width:22px;height:22px;border-radius:6px;border:2px solid ' + (D.newFolderColor === i ? "var(--ink)" : "transparent") + ';background:var(' + c + ');cursor:pointer"></button>').join("") + '</div><button class="btn small primary" type="submit">Add folder</button></form></details>';
+  const ffObj = folders.find(f => f.id === ff);
+  return '<div class="row between"><h1>Library</h1><button class="btn primary" data-act="new-set">+ New study set</button></div>' + folderBar + newFolder +
+    (ffObj ? (S.confirm === "del-folder" ? '<div class="notice row between"><span>Delete the folder “' + esc(ffObj.name) + '”? Its study sets stay in your library.</span><span class="row"><button class="btn small danger" data-act="del-folder-yes">Delete folder</button><button class="btn small" data-act="confirm-cancel">Keep</button></span></div>' : '<button class="btn small ghost danger" data-act="del-folder" style="align-self:flex-start">Delete this folder</button>') : "") +
+    (sets.length ? '<div class="grid-sets">' + sets.map(setCard).join("") + '</div>' : '<div class="empty"><p class="muted">' + (ff === "all" ? "No study sets yet." : "No study sets in this folder yet. Move one here from its overview.") + '</p><button class="btn primary" data-act="new-set">+ New study set</button></div>');
+}
+
+/* ---------- new set ---------- */
+function vNewSet(){
+  const D = S.draft, folders = S.profile.folders || [];
+  const types = [["notes","Notes / slides"],["past_paper","Past paper"],["outline","Course outline"]];
+  return '<button class="btn ghost small" data-act="go" data-view="library" style="align-self:flex-start">← Library</button><h1>New study set</h1><p class="muted" style="max-width:62ch">One study set per subject or exam. Upload your material and Exam Ready makes your study notes and flashcards in one go.</p>' + errBox() + busyBox() +
+    '<form id="new-set" class="sheet"><div class="fields"><label class="field"><span>Subject or exam name</span><input type="text" id="ns-name" placeholder="e.g. 1303ENG Digital Systems" required maxlength="80"></label><label class="field"><span>Level</span><select id="ns-level"><option value="uni">University</option><option value="school">High school</option></select></label><label class="field"><span>Exam date</span><input type="date" id="ns-date"></label>' + (folders.length ? '<label class="field"><span>Folder</span><select id="ns-folder"><option value="">No folder</option>' + folders.map(f => '<option value="' + f.id + '">' + esc(f.name) + '</option>').join("") + '</select></label>' : "") + '</div>' +
+    '<div class="stack"><div class="row between"><b>Add your material</b><div class="seg" role="group" aria-label="Material type">' + types.map(([k,l]) => '<button type="button" aria-pressed="' + (D.srcType === k) + '" data-act="src-type" data-type="' + k + '">' + l + '</button>').join("") + '</div></div>' +
+    '<label class="drop" id="drop"><b>Upload files</b><span class="small muted">PDF, .txt or .md' + (S.imgLimits ? ", or photos of pages" : "") + '. Drop them here or tap to choose.</span><input type="file" id="ns-files" multiple accept=".pdf,.txt,.md,text/plain,application/pdf' + (S.imgLimits ? "," + S.imgLimits.mediaTypes.join(",") : "") + '"><span class="small" id="ns-files-n">' + (D.pendingFiles ? D.pendingFiles.length + " file" + (D.pendingFiles.length > 1 ? "s" : "") + " chosen" : "") + '</span></label>' +
+    '<label class="field"><span>Or paste text</span><textarea id="ns-paste" placeholder="Paste lecture notes, a study guide or a topic list"></textarea></label></div>' +
+    '<label class="row small" style="gap:8px"><input type="checkbox" id="ns-auto" checked> <span><b>Make my study notes and flashcards now</b> · takes about a minute</span></label>' +
+    '<div class="row"><button class="btn primary big" type="submit"' + (S.busy ? " disabled" : "") + '>Create study set</button><button class="btn ghost" type="button" data-act="example">Try an example instead</button></div>' + aiOff() + '</form>';
+}
+
+/* ---------- set page ---------- */
+const TOOLS = [["overview","◫","Overview"],["notes","N","Notes"],["flashcards","F","Flashcards"],["quiz","Q","Quiz"],["exams","E","Practice exams"],["tutor","T","Tutor"],["sources","↑","Files"]];
+function vSet(){
+  const s = S.subjects[S.subjectId]; if (!s){ S.view = "library"; return vLibrary(); }
+  const r = pct(readiness(s)), d = daysUntil(s.examDate), f = folderOf(s);
+  const head = '<div class="set-head"><div class="row between" style="align-items:flex-start"><div class="stack" style="gap:6px;flex:1;min-width:220px"><span class="label"><span class="fdot" style="display:inline-block;background:' + folderColor(f) + ';margin-right:6px;vertical-align:-1px"></span>' + (f ? esc(f.name) + " · " : "") + (s.level === "school" ? "High school" : "University") + (s.example ? " · Example" : "") + '</span><h1>' + esc(s.name) + '</h1>' + (d != null ? '<span class="small muted">Exam ' + esc(fmtDate(s.examDate)) + ' · <b class="' + (d >= 0 && d <= 7 ? "" : "") + '">' + (d < 0 ? "passed" : d === 0 ? "today" : d + " days to go") + '</b></span>' : '<span class="small muted">No exam date yet</span>') + '</div><div class="stack" style="gap:6px;min-width:170px"><span class="label">Readiness</span><span class="ready-big">' + r + '%</span>' + meter(r) + '</div></div>' +
+    '<div class="tools" role="tablist">' + TOOLS.map(([k, ic, l]) => '<button role="tab" aria-selected="' + (S.tool === k) + '" data-act="tool" data-tool="' + k + '" data-sid="' + s.id + '"><span class="ic">' + ic + '</span>' + l + '</button>').join("") + '</div></div>';
+  const body = ({ overview: tOverview, notes: tNotes, flashcards: tCards, quiz: tQuiz, exams: tExams, tutor: tTutor, sources: tSources })[S.tool] || tOverview;
+  return head + errBox() + busyBox() + body(s);
+}
+function pathStages(s){
+  const cards = s.cards || [], n = cards.length || 1;
+  const seen = cards.filter(c => (c.reviews || 0) > 0).length, prac = cards.filter(c => (c.box || 0) >= 2).length, mast = cards.filter(c => (c.box || 0) >= 4).length;
+  const best = subjectExams(s.id).filter(e => e.submittedAt && e.kind !== "quiz").reduce((m, e) => Math.max(m, e.score / e.total), 0);
+  return [
+    { name: "Learn", sub: seen + " of " + cards.length + " cards seen", p: seen / n },
+    { name: "Practise", sub: prac + " cards remembered", p: prac / n },
+    { name: "Master", sub: mast + " cards mastered", p: mast / n },
+    { name: "Exam ready", sub: best ? "Best exam " + pct(best) + "%" : "No exam sat yet", p: clamp(best / 0.75, 0, 1) }
+  ];
+}
+function tOverview(s){
+  const srcs = sourcesOf(s), cards = s.cards || [], due = cards.filter(isDue).length;
+  if (!srcs.length && !cards.length) return '<div class="empty"><h2>Add your material</h2><p class="muted">Upload slides, notes or a past paper to build this study set.</p><button class="btn primary" data-act="tool" data-tool="sources" data-sid="' + s.id + '">Upload files</button></div>';
+  const build = (!cards.length || !s.notes) && srcs.length ? '<section class="sheet" style="border-color:var(--accent)"><h2>Build your study set</h2><p class="muted small">Make study notes and 20 flashcards from your ' + srcs.length + ' file' + (srcs.length > 1 ? "s" : "") + '.</p><button class="btn primary" data-act="make-all" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Make notes and flashcards</button>' + aiOff() + '</section>' : "";
+  const path = '<section class="sheet"><div class="row between"><h2>Path to mastery</h2><span class="small muted">Each stage builds on the one before</span></div><div class="path">' + pathStages(s).map(st => '<div class="stage"><b>' + st.name + '</b><div class="bar"><i style="width:' + pct(st.p) + '%"></i></div><span>' + esc(st.sub) + '</span></div>').join("") + '</div></section>';
+  const quick = '<div class="quick">' +
+    '<button class="go" data-act="study-due" data-sid="' + s.id + '"' + (cards.length ? "" : " disabled") + '><span class="ic">F</span><b>Study flashcards</b><span class="small muted">' + due + ' due now</span></button>' +
+    '<button data-act="tool" data-tool="quiz" data-sid="' + s.id + '"><span class="ic">Q</span><b>Take a quiz</b><span class="small muted">10 quick questions</span></button>' +
+    '<button data-act="tool" data-tool="exams" data-sid="' + s.id + '"><span class="ic">E</span><b>Practice exam</b><span class="small muted">Timed and marked</span></button>' +
+    '<button data-act="tool" data-tool="notes" data-sid="' + s.id + '"><span class="ic">N</span><b>Read notes</b><span class="small muted">' + (s.notes ? "Ready" : "Not made yet") + '</span></button>' +
+    '<button data-act="tool" data-tool="tutor" data-sid="' + s.id + '"><span class="ic">T</span><b>Ask the tutor</b><span class="small muted">Explain anything</span></button></div>';
+  const folders = S.profile.folders || [];
+  const settings = '<details class="sheet"><summary>Set details</summary><div class="fields" style="margin-top:12px"><label class="field"><span>Name</span><input type="text" id="set-name" value="' + esc(s.name) + '" maxlength="80"></label><label class="field"><span>Exam date</span><input type="date" id="set-date" value="' + esc(s.examDate || "") + '"></label><label class="field"><span>Folder</span><select id="set-folder"><option value="">No folder</option>' + folders.map(f => '<option value="' + f.id + '"' + (s.folder === f.id ? " selected" : "") + '>' + esc(f.name) + '</option>').join("") + '</select></label><label class="field"><span>Level</span><select id="set-level"><option value="uni"' + (s.level !== "school" ? " selected" : "") + '>University</option><option value="school"' + (s.level === "school" ? " selected" : "") + '>High school</option></select></label></div>' +
+    (S.confirm === "del-set" ? '<div class="notice bad row between" style="margin-top:12px"><span>Delete this study set, its files, cards and exams?</span><span class="row"><button class="btn small danger" data-act="del-set-yes">Delete</button><button class="btn small" data-act="confirm-cancel">Keep</button></span></div>' : '<button class="btn small ghost danger" data-act="del-set" style="margin-top:12px">Delete study set</button>') + '</details>';
+  return build + quick + path + topicsSheet(s) + settings;
+}
+function topicsSheet(s){
+  const ts = topicStats(s).sort((a,b) => a.topic.localeCompare(b.topic));
+  if (!ts.length) return "";
+  return '<section class="sheet"><div class="row between"><h2>Topics</h2><span class="small muted">Cards 40% · latest exam 60%</span></div>' + ts.map(t => '<div class="topic-row"><div style="min-width:0"><b>' + esc(t.topic) + '</b><p class="small muted">' + (t.cardM != null ? "Cards " + pct(t.cardM) + "%" : "No cards") + ' · ' + (t.examM != null ? "Exam " + pct(t.examM) + "%" : "Not tested yet") + '</p></div>' + meter(pct(t.score)) + '<span class="mono small">' + pct(t.score) + '%</span></div>').join("") + '</section>';
+}
+function tNotes(s){
+  if (!s.notes) return '<section class="sheet"><h2>Study notes</h2><p class="muted">Turn your uploaded files into clean revision notes with headings, key formulas and common mistakes.</p><button class="btn primary" data-act="gen-notes" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample || !sourcesOf(s).length ? " disabled" : "") + '>Write my notes</button>' + (sourcesOf(s).length ? "" : '<p class="small muted">Upload a file first.</p>') + aiOff() + '</section>';
+  return '<section class="sheet"><div class="row between"><span class="small muted">Written ' + esc(fmtWhen(s.notes.createdAt)) + '</span><button class="btn small" data-act="gen-notes" data-sid="' + s.id + '"' + (S.busy || !S.sample ? " disabled" : "") + '>Rewrite from my files</button></div><article class="notes-doc rich">' + rich(s.notes.text) + '</article></section>';
+}
+function tCards(s){
+  const D = S.draft, cards = s.cards || [];
+  const gen = '<details class="sheet"' + (cards.length ? "" : " open") + '><summary>Make more flashcards with AI</summary><div class="stack" style="margin-top:12px"><div class="fields"><div class="field"><span>How many</span><div class="seg">' + [10,20,30].map(n => '<button aria-pressed="' + (D.cardsN === n) + '" data-act="cards-n" data-n="' + n + '">' + n + '</button>').join("") + '</div></div><div class="field"><span>Card types</span><div class="seg">' + [["both","Both"],["method","Methods"],["concept","Concepts"]].map(([k,l]) => '<button aria-pressed="' + (D.cardsMix === k) + '" data-act="cards-mix" data-mix="' + k + '">' + l + '</button>').join("") + '</div></div><label class="field"><span>Focus (optional)</span><input type="text" id="cards-focus" value="' + esc(D.cardsFocus) + '" placeholder="e.g. RC circuits, week 5"></label></div><button class="btn primary" data-act="gen-cards" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Generate flashcards</button>' + aiOff() + '</div></details>';
+  if (!cards.length) return gen;
+  const byTopic = {}; cards.forEach(c => (byTopic[c.topic] = byTopic[c.topic] || []).push(c));
+  const list = Object.keys(byTopic).sort().map(t => {
+    const cs = byTopic[t], m = pct(cs.reduce((a,c) => a + mastery(c), 0) / cs.length);
+    return '<section class="sheet"><div class="row between"><h3>' + esc(t) + ' <span class="small muted" style="font-family:var(--f-body);font-weight:400">' + cs.length + ' cards · ' + m + '% mastered</span></h3><button class="btn small" data-act="study-topic" data-sid="' + s.id + '" data-topic="' + esc(t) + '">Study topic</button></div><div class="list">' + cs.map(c => '<div class="item"><span class="type-tag ' + c.type + '">' + (c.type === "method" ? "Method" : "Concept") + '</span><div class="grow rich">' + rich(c.front) + '</div><span class="dots" title="' + pct(mastery(c)) + '% mastered">' + [1,2,3,4,5].map(i => '<i class="' + ((c.box || 0) >= i ? "on" : "") + '"></i>').join("") + '</span><button class="btn small ghost" data-act="del-card" data-id="' + c.id + '" aria-label="Delete card">✕</button></div>').join("") + '</div></section>';
+  }).join("");
+  return '<div class="row"><button class="btn primary big" data-act="study-due" data-sid="' + s.id + '">Study due cards (' + cards.filter(isDue).length + ')</button><button class="btn big" data-act="study-all" data-sid="' + s.id + '">Study all ' + cards.length + '</button></div>' + gen + list;
+}
+function examList(s, kind){
+  const exams = subjectExams(s.id).filter(e => (e.kind === "quiz") === (kind === "quiz"));
+  if (!exams.length) return "";
+  return '<section class="sheet"><h3>' + (kind === "quiz" ? "Past quizzes" : "Your exams") + '</h3><div class="list">' + exams.map(e => {
+    const p = e.submittedAt ? pct(e.score / e.total) : null;
+    return '<div class="item"><div class="grow"><b>' + esc(e.title) + '</b><p class="small muted">' + esc(fmtWhen(e.createdAt)) + ' · ' + e.questions.length + ' questions' + (kind === "quiz" ? "" : ' · ' + e.minutes + ' min · ' + (e.settings.mode === "practice" ? "practice mode" : "exam mode")) + '</p></div>' + (p != null ? '<span class="chip ' + tone(p) + ' mono">' + p + '%</span><button class="btn small" data-act="view-result" data-id="' + e.id + '">Results</button><button class="btn small ghost" data-act="retake" data-id="' + e.id + '">Retake</button>' : '<button class="btn small primary" data-act="start-exam" data-id="' + e.id + '">Start</button>') + '</div>';
+  }).join("") + '</div></section>';
+}
+function topicPicker(s){
+  const D = S.draft, topics = Array.from(new Set([...(s.topics || []), ...(s.cards || []).map(c => c.topic)]));
+  return topics.length ? '<div class="field"><span>Topics</span><div class="row" style="gap:6px"><button class="chip ' + (!D.examTopics.length ? "acc" : "") + '" data-act="ex-topic-all">All topics</button>' + topics.map(t => '<button class="chip ' + (D.examTopics.includes(t) ? "acc" : "") + '" data-act="ex-topic" data-topic="' + esc(t) + '">' + esc(t) + '</button>').join("") + '</div></div>' : "";
+}
+function tQuiz(s){
+  return '<section class="sheet"><h2>Quick quiz</h2><p class="muted small">Ten multiple-choice questions with instant feedback and a worked solution after each one.</p>' + topicPicker(s) + '<button class="btn primary big" data-act="gen-quiz" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Start a quiz</button>' + aiOff() + '</section>' + examList(s, "quiz");
+}
+function tExams(s){
+  const D = S.draft, hasPast = sourcesOf(s).some(x => x.type === "past_paper");
+  return '<section class="sheet"><h2>Build a practice exam</h2><div class="fields"><div class="field"><span>Length</span><div class="seg">' + ["quick","standard","full"].map(k => '<button aria-pressed="' + (D.examLen === k) + '" data-act="ex-len" data-v="' + k + '">' + LEN[k].label + '</button>').join("") + '</div></div><div class="field"><span>Difficulty</span><div class="seg">' + [["easier","Easier"],["exam","Exam level"],["harder","Harder"]].map(([k,l]) => '<button aria-pressed="' + (D.examDiff === k) + '" data-act="ex-diff" data-v="' + k + '">' + l + '</button>').join("") + '</div></div><div class="field"><span>Mode</span><div class="seg">' + [["exam","Exam: timed, no hints"],["practice","Practice: check as you go"]].map(([k,l]) => '<button aria-pressed="' + (D.examMode === k) + '" data-act="ex-mode" data-v="' + k + '">' + l + '</button>').join("") + '</div></div></div>' + topicPicker(s) +
+    '<label class="row small" style="gap:8px"><input type="checkbox" id="ex-predict"' + (D.examPredict ? " checked" : "") + '> <span><b>Predict my exam</b> · weight topics like the real exam, using your ' + (hasPast ? "past papers and outline" : "outline and notes (add a past paper in Files for a closer match)") + '</span></label>' +
+    '<button class="btn primary big" data-act="gen-exam" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Build and start exam</button>' + aiOff() + '</section>' + examList(s, "exam");
+}
+function tTutor(s){
+  const chat = s.chat || [];
+  const sugg = ["Explain the hardest topic simply", "Give me a practice question", "What will most likely be on the exam?", "Quiz me on " + ((s.topics || [])[0] || "the key ideas")];
+  return '<section class="sheet"><div class="row between"><h2>Tutor</h2>' + (chat.length ? '<button class="btn small ghost" data-act="chat-clear">Clear chat</button>' : "") + '</div><div class="chat">' +
+    (chat.length ? chat.map((m, i) => '<div class="bubble ' + (m.role === "user" ? "me" : "ai") + '"' + (i === chat.length - 1 && m.role === "assistant" ? ' id="last-ai"' : "") + '><div class="rich">' + (m.content ? rich(m.content) : "Thinking…") + '</div></div>').join("") : '<p class="muted">Ask anything about ' + esc(s.name) + '. The tutor reads your uploaded files, so its answers match your course.</p><div class="suggest">' + sugg.map(q => '<button class="chip" data-act="chat-suggest" data-q="' + esc(q) + '">' + esc(q) + '</button>').join("") + '</div>') +
+    '<div id="chat-end"></div></div><form id="chat-form" class="chat-input"><textarea id="chat-text" placeholder="Ask a question about your course" rows="1"' + (S.sample ? "" : " disabled") + '></textarea><button class="btn primary" type="submit"' + (S.chatBusy || !S.sample ? " disabled" : "") + '>Send</button></form>' + aiOff() + '</section>';
+}
+function tSources(s){
+  const D = S.draft, srcs = sourcesOf(s);
+  const types = [["notes","Notes / slides"],["past_paper","Past paper"],["outline","Course outline"]];
+  return '<section class="sheet"><div class="row between"><h2>Add files</h2><div class="seg" role="group" aria-label="Material type">' + types.map(([k,l]) => '<button aria-pressed="' + (D.srcType === k) + '" data-act="src-type" data-type="' + k + '">' + l + '</button>').join("") + '</div></div>' +
+    '<p class="small muted">' + (D.srcType === "past_paper" ? "Past papers teach the exam builder the real exam’s style, question types and marks." : D.srcType === "outline" ? "The course outline helps predict which topics carry the most marks." : "Lecture slides, notes and textbook pages become your notes, flashcards and exam questions.") + '</p>' +
+    '<label class="drop" id="drop"><b>Upload files</b><span class="small muted">PDF, .txt or .md' + (S.imgLimits ? ", or photos of pages" : "") + '. Drop them here or tap to choose.</span><input type="file" id="file-in" multiple accept=".pdf,.txt,.md,text/plain,application/pdf' + (S.imgLimits ? "," + S.imgLimits.mediaTypes.join(",") : "") + '"></label>' +
+    '<details><summary>Or paste text</summary><div class="stack" style="margin-top:10px"><label class="field"><span>Title</span><input type="text" id="paste-title" placeholder="e.g. Week 7 lecture" maxlength="120"></label><label class="field"><span>Text</span><textarea id="paste-text" placeholder="Paste your notes here"></textarea></label><button class="btn" data-act="paste-add" style="align-self:flex-start">Add text</button></div></details></section>' +
+    '<section class="sheet"><h3>Files in this set</h3>' + (srcs.length ? '<div class="list">' + srcs.map(x => '<div class="item"><span class="chip ' + (x.type === "past_paper" ? "warn" : x.type === "outline" ? "acc" : "") + '">' + (x.type === "past_paper" ? "Past paper" : x.type === "outline" ? "Outline" : "Notes") + '</span><div class="grow"><b>' + esc(x.title) + '</b><p class="small muted">' + Math.round(x.text.length / 5).toLocaleString() + ' words · added ' + esc(fmtWhen(x.createdAt)) + '</p></div>' + (S.confirm === "src-" + x.id ? '<button class="btn small danger" data-act="del-src-yes" data-id="' + x.id + '">Remove</button><button class="btn small" data-act="confirm-cancel">Keep</button>' : '<button class="btn small ghost" data-act="del-src" data-id="' + x.id + '">Remove</button>') + '</div>').join("") + '</div>' : '<p class="muted">No files yet.</p>') + '</section>';
+}
+
+/* ---------- study / exam / results ---------- */
+function vStudy(){
+  const ss = S.session, s = S.subjects[ss.sid];
+  if (!ss.queue.length) return '<div class="study-wrap"><section class="sheet"><span class="label">' + esc(s.name) + '</span><h1>Session done</h1><p class="muted">You went through ' + ss.total + ' card' + (ss.total > 1 ? "s" : "") + ' and knew ' + ss.known + ' straight away. Cards you didn’t know will come back sooner.</p><div class="row"><button class="btn primary" data-act="end-study">Back to ' + esc(s.name) + '</button><button class="btn" data-act="go" data-view="dashboard">Today’s plan</button></div></section></div>';
+  const c = (s.cards || []).find(x => x.id === ss.queue[0]);
+  if (!c){ ss.queue.shift(); return vStudy(); }
+  const prog = Math.round(ss.done / (ss.done + ss.queue.length) * 100);
+  const back = ss.flipped ? '<div class="back">' + (c.type === "method" && c.steps.length ? '<ol class="steps">' + c.steps.map(st => '<li><div><div class="rich">' + rich(st.do) + '</div>' + (st.why ? '<div class="why rich">' + rich(st.why) + '</div>' : "") + '</div></li>').join("") + '</ol>' : "") + (c.back ? '<div class="rich' + (c.type === "method" ? " muted small" : "") + '">' + rich(c.back) + '</div>' : "") +
+    (ss.explain ? '<div class="explain"><span class="label">Explained another way</span><div class="rich" id="explain-out">' + (ss.explain.text ? rich(ss.explain.text) : "Thinking…") + '</div></div>' : (S.sample ? '<button class="btn ghost small" data-act="explain" style="align-self:flex-start">Explain it differently</button>' : "")) + '</div>' : "";
+  return '<div class="study-wrap"><div class="row between"><button class="btn ghost small" data-act="end-study">← End session</button><span class="small muted">' + esc(ss.label) + ' · <span class="mono">' + (ss.done + 1) + ' / ' + (ss.done + ss.queue.length) + '</span></span></div><div class="progress-line"><i style="width:' + prog + '%"></i></div>' +
+    '<article class="card"><div class="row between"><span class="type-tag ' + c.type + '">' + (c.type === "method" ? "Method · say the steps" : "Concept") + '</span><span class="small muted">' + esc(c.topic) + '</span></div><div class="front rich">' + rich(c.front) + '</div>' + back + '</article>' +
+    (ss.flipped ? '<div class="rate"><button class="btn no" data-act="rate" data-r="again">Didn’t know it<small>key 1 · see it again soon</small></button><button class="btn yes" data-act="rate" data-r="good">Knew it<small>key 2 · ' + nextLabel(c, "good") + '</small></button></div><div class="rate-more"><button class="btn small ghost" data-act="rate" data-r="hard">Only just (' + nextLabel(c, "hard") + ')</button><button class="btn small ghost" data-act="rate" data-r="easy">Too easy (' + nextLabel(c, "easy") + ')</button></div>' : '<button class="btn primary big" data-act="flip">Show answer <span class="small" style="opacity:.75">(space)</span></button>') + '</div>';
+}
+function nextLabel(c, r){ const t = Object.assign({}, c); rateCard(t, r); const d = (t.due - Date.now()) / DAY; return d < 1 ? "back in " + Math.max(1, Math.round(d * 24)) + " h" : "back in " + Math.round(d) + " day" + (Math.round(d) === 1 ? "" : "s"); }
+
+function vExam(){
+  const run = S.run, ex = S.exams[run.id], q = ex.questions[run.idx], mode = ex.settings.mode, quiz = mode === "quiz", practice = mode === "practice";
+  const a = run.answers[q.id] || {};
+  const nAns = ex.questions.filter(isAnswered).length, total = ex.questions.reduce((s,q) => s + q.marks, 0);
+  const shown = (practice && run.reveal[q.id]) || (quiz && a.choice != null);
+  let body = '<div class="qmeta"><span class="label">Question ' + (run.idx + 1) + ' of ' + ex.questions.length + '</span>' + (quiz ? "" : '<span class="chip mono">' + q.marks + ' mark' + (q.marks > 1 ? "s" : "") + '</span>') + '<span class="chip">' + esc(q.topic) + '</span></div><div class="qtext rich">' + rich(q.question) + '</div>';
+  if (q.type === "mcq"){
+    body += '<div class="opts" role="radiogroup">' + q.options.map((o, i) => '<label class="opt' + (shown ? (i === q.correct ? " correct" : a.choice === i ? " wrong" : "") : "") + '"><input type="radio" name="mcq" data-act="choose" data-i="' + i + '"' + (a.choice === i ? " checked" : "") + (shown ? " disabled" : "") + '><span class="mono" style="font-weight:600">' + String.fromCharCode(65 + i) + '</span><span class="rich" style="min-width:0">' + rich(o) + '</span></label>').join("") + '</div>';
+    if (quiz && shown) body += '<div class="notice ' + (a.choice === q.correct ? "" : "bad") + '" style="' + (a.choice === q.correct ? "background:var(--good-soft);color:var(--good)" : "") + '">' + (a.choice === q.correct ? "Correct!" : "Not quite. The answer is " + String.fromCharCode(65 + q.correct) + ".") + '</div>';
+  } else {
+    body += '<label class="field"><span>Your answer' + (q.type === "long" ? " and working" : "") + '</span><textarea id="ans-text" style="min-height:' + (q.type === "long" ? 200 : 110) + 'px" placeholder="Type your answer. For maths, plain text like 3x^2 + 1/2 is fine.">' + esc(a.text || "") + '</textarea></label>';
+    if (S.imgLimits) body += '<div class="row">' + (run.photos[q.id] ? '<img class="photo-thumb" alt="Your handwritten working" src="' + URL.createObjectURL(run.photos[q.id]) + '"><button class="btn small ghost" data-act="photo-del">Remove photo</button>' : '<label class="btn small"><input type="file" id="photo-in" accept="' + S.imgLimits.mediaTypes.join(",") + '" hidden>Add photo of handwritten working</label><span class="small muted">Photos are used for marking and aren’t saved.</span>') + '</div>';
+  }
+  if (shown) body += '<div class="solution"><span class="label">Worked solution</span>' + (q.answer ? '<div class="rich"><b>Answer:</b> ' + rich(q.answer) + '</div>' : "") + '<div class="rich">' + rich(q.solution) + '</div></div>';
+  else if (practice) body += '<button class="btn small" data-act="reveal" style="align-self:flex-start">Check answer</button>';
+  const last = run.idx >= ex.questions.length - 1;
+  const nav = '<div class="row between"><button class="btn" data-act="q-prev"' + (run.idx === 0 ? " disabled" : "") + '>← Previous</button>' + (!last ? '<button class="btn primary" data-act="q-next">Next →</button>' : '<button class="btn primary" data-act="submit">' + (quiz ? "See my score" : "Finish and mark") + '</button>') + '</div>';
+  const confirm = run.confirmSubmit ? '<div class="notice row between"><span>' + (ex.questions.length - nAns) + ' question' + (ex.questions.length - nAns === 1 ? " is" : "s are") + ' unanswered. Submit anyway?</span><span class="row"><button class="btn small primary" data-act="submit-yes">Submit</button><button class="btn small" data-act="submit-no">Keep going</button></span></div>' : "";
+  const pill = (qq, i) => { let cls = isAnswered(qq) ? "answered" : ""; if (quiz && run.answers[qq.id] && run.answers[qq.id].choice != null) cls = run.answers[qq.id].choice === qq.correct ? "right" : "wrong"; return '<button class="' + cls + '" aria-current="' + (i === run.idx) + '" data-act="q-go" data-i="' + i + '">' + (i + 1) + '</button>'; };
+  return '<div class="exam-head"><div class="stack" style="gap:2px;min-width:0"><b>' + esc(ex.title) + '</b><span class="small muted">' + (quiz ? "Quiz" : total + " marks") + ' · ' + (mode === "exam" ? ex.minutes + " minutes" : quiz ? "instant feedback" : "practice mode") + ' · ' + nAns + '/' + ex.questions.length + ' answered</span></div><div class="row"><span class="timer" id="timer">' + (mode === "exam" ? fmtClock(ex.minutes * 60000) : "00:00") + '</span><button class="btn small" data-act="submit">Submit</button></div></div>' +
+    '<div class="qnav" aria-label="Questions">' + ex.questions.map(pill).join("") + '</div>' + confirm + '<section class="sheet question">' + body + '</section>' + nav +
+    '<button class="btn ghost small danger" data-act="quit-exam" style="align-self:flex-start">' + (S.confirm === "quit" ? "Tap again to leave without marking" : "Leave") + '</button>';
+}
+const vMarking = () => '<section class="sheet"><h1>Marking your exam</h1>' + busyBox() + '<p class="muted small">Multiple choice is marked instantly. Written answers get part marks for correct working.</p></section>';
+function vResult(){
+  const ex = S.exams[S.resultId]; if (!ex){ S.view = "dashboard"; return vDashboard(); }
+  const s = S.subjects[ex.subjectId], p = pct(ex.score / ex.total), quiz = ex.kind === "quiz";
+  const ts = Object.entries(ex.topicScores || {}).map(([t, v]) => ({ t, p: pct(v.got / v.total) })).sort((a,b) => a.p - b.p);
+  const lost = ex.questions.filter(q => (ex.results[q.id]?.awarded ?? 0) < q.marks && !(ex.madeCards || []).includes(q.id)).length;
+  const prev = subjectExams(ex.subjectId).filter(e => e.submittedAt && e.id !== ex.id && e.kind === ex.kind && e.submittedAt < ex.submittedAt)[0];
+  const head = '<button class="btn ghost small" data-act="tool" data-tool="' + (quiz ? "quiz" : "exams") + '" data-sid="' + s.id + '" style="align-self:flex-start">← ' + esc(s.name) + '</button>' + errBox() +
+    '<section class="sheet"><span class="label">' + esc(ex.title) + ' · ' + esc(fmtWhen(ex.submittedAt)) + '</span><div class="row" style="gap:28px;align-items:flex-end"><div><div class="score-big">' + p + '%</div><p class="mono">' + (Math.round(ex.score * 2) / 2) + ' / ' + ex.total + (quiz ? " correct" : " marks") + '</p></div>' + (quiz ? "" : '<div class="stack" style="gap:4px"><span class="label">Estimated grade</span><b style="font-family:var(--f-display);font-size:1.4rem">' + esc(grade(p, s.level)) + '</b></div>') + '<span class="small muted">Time ' + fmtClock(ex.timeTaken || 0) + (prev ? ' · last time ' + pct(prev.score / prev.total) + '% (' + (p - pct(prev.score / prev.total) >= 0 ? "+" : "") + (p - pct(prev.score / prev.total)) + ')' : "") + '</span></div>' +
+    (ts.length && ts[0].p < 70 ? '<p>You lost the most marks on <span class="hl">' + esc(ts[0].t) + '</span>' + (ts[1] && ts[1].p < 70 ? ' and <span class="hl">' + esc(ts[1].t) + '</span>' : "") + '.</p>' : "") +
+    '<div class="row"><button class="btn primary" data-act="mistakes" data-id="' + ex.id + '"' + (lost ? "" : " disabled") + '>Turn ' + lost + ' mistake' + (lost === 1 ? "" : "s") + ' into flashcards</button><button class="btn" data-act="retake" data-id="' + ex.id + '">Retake</button><button class="btn" data-act="tool" data-tool="' + (quiz ? "quiz" : "exams") + '" data-sid="' + s.id + '">New ' + (quiz ? "quiz" : "exam") + '</button></div></section>';
+  const topics = '<section class="sheet"><h2>By topic</h2>' + ts.map(t => '<div class="topic-row"><b style="min-width:0">' + esc(t.t) + '</b>' + meter(t.p) + '<span class="mono small">' + t.p + '%</span></div>').join("") + '</section>';
+  const qs = '<section class="sheet"><h2>Question by question</h2><div class="list">' + ex.questions.map((q, i) => {
+    const r = ex.results[q.id] || { awarded: 0, feedback: "" }, a = ex.answers[q.id] || {};
+    const full = r.awarded >= q.marks, zero = r.awarded === 0;
+    const yours = q.type === "mcq" ? (a.choice != null ? String.fromCharCode(65 + a.choice) + ") " + q.options[a.choice] : "") : (a.text || "");
+    return '<div class="item"><span class="chip mono ' + (full ? "good" : zero ? "bad" : "warn") + '">' + (Math.round(r.awarded * 2) / 2) + '/' + q.marks + '</span><div class="grow stack" style="gap:8px"><div class="small muted">Q' + (i + 1) + ' · ' + esc(q.topic) + '</div><div class="rich">' + rich(q.question) + '</div>' +
+      '<div class="small"><span class="label">Your answer</span><div class="rich">' + (yours ? rich(yours) : '<span class="muted">' + ((ex.photoIds || []).includes(q.id) ? "Handwritten working (photo)" : "No answer") + '</span>') + '</div></div>' +
+      (r.feedback ? '<div class="small rich">' + rich(r.feedback) + '</div>' : "") +
+      '<details><summary>Worked solution</summary><div class="solution" style="margin-top:8px">' + (q.answer ? '<div class="rich"><b>Answer:</b> ' + rich(q.answer) + '</div>' : "") + '<div class="rich">' + rich(q.solution) + '</div></div></details></div></div>';
+  }).join("") + '</div></section>';
+  return head + '<div class="grid2"><div class="stack" style="gap:20px">' + qs + '</div><div class="stack" style="gap:20px">' + topics + '</div></div>';
+}
+
+function vProgress(){
+  const sets = setsSorted();
+  if (!sets.length) return '<h1>Progress</h1><div class="empty"><p class="muted">Make a study set to start tracking your readiness.</p><button class="btn primary" data-act="new-set">+ New study set</button></div>';
+  const days = []; const d = new Date(); d.setDate(d.getDate() - 27);
+  for (let i = 0; i < 28; i++){ days.push({ k: dkey(d), m: S.profile.activity[dkey(d)] || 0, day: d.getDate() }); d.setDate(d.getDate() + 1); }
+  const maxM = Math.max(30, ...days.map(x => x.m)), W = 560, H = 140, bw = W / 28;
+  const chart = '<div style="overflow-x:auto"><svg viewBox="0 0 ' + W + ' ' + (H + 22) + '" width="100%" style="min-width:420px;display:block" role="img" aria-label="Minutes studied per day, last 28 days">' +
+    [0, 0.5, 1].map(f => '<line x1="0" x2="' + W + '" y1="' + (H - f * (H - 10)) + '" y2="' + (H - f * (H - 10)) + '" stroke="var(--grid)"/>' + (f ? '<text x="' + (W - 2) + '" y="' + (H - f * (H - 10) - 3) + '" text-anchor="end" font-size="10" fill="var(--ink-3)" font-family="JetBrains Mono, monospace">' + Math.round(maxM * f) + ' min</text>' : "")).join("") +
+    days.map((x, i) => { const h = x.m / maxM * (H - 10); return '<rect x="' + (i * bw + 2) + '" y="' + (H - h) + '" width="' + (bw - 4) + '" height="' + Math.max(h, x.m ? 2 : 0) + '" rx="2" fill="' + (i === 27 ? "var(--accent)" : "var(--ink-3)") + '" opacity="' + (i === 27 ? 1 : 0.55) + '"><title>' + x.k + ': ' + Math.round(x.m) + ' min</title></rect>' + (i % 7 === 6 || i === 0 ? '<text x="' + (i * bw + bw / 2) + '" y="' + (H + 15) + '" text-anchor="middle" font-size="10" fill="var(--ink-3)" font-family="JetBrains Mono, monospace">' + x.day + '</text>' : ""); }).join("") + '</svg></div>';
+  return '<h1>Progress</h1><section class="sheet"><div class="row between"><h2>Study time, last 4 weeks</h2><span class="small muted">' + streak() + '-day streak · ' + weekMinutes() + ' min this week</span></div>' + chart + '</section>' +
+    '<div class="grid-sets" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">' + sets.map(s => {
+      const r = pct(readiness(s)), ts = topicStats(s).sort((a,b) => a.topic.localeCompare(b.topic)), ex = subjectExams(s.id).filter(e => e.submittedAt && e.kind !== "quiz").slice(0, 5).reverse();
+      return '<section class="sheet"><div class="row between"><h3>' + esc(s.name) + '</h3><span class="chip ' + tone(r) + '">' + r + '% ready</span></div>' + meter(r) +
+        (ts.length ? '<div class="stack" style="gap:8px">' + ts.map(t => '<div class="topic-row" style="grid-template-columns:minmax(0,1fr) 90px 40px"><span class="small" style="min-width:0">' + esc(t.topic) + '</span>' + meter(pct(t.score)) + '<span class="mono small">' + pct(t.score) + '%</span></div>').join("") + '</div>' : '<p class="small muted">No topics yet.</p>') +
+        (ex.length ? '<div class="stack" style="gap:6px"><span class="label">Exam scores</span><div class="row" style="gap:6px">' + ex.map(e => '<button class="chip mono ' + tone(pct(e.score / e.total)) + '" data-act="view-result" data-id="' + e.id + '">' + pct(e.score / e.total) + '%</button>').join('<span class="muted">→</span>') + '</div></div>' : "") +
+        '<button class="btn small" data-act="open-set" data-sid="' + s.id + '" style="align-self:flex-start">Open study set</button></section>';
+    }).join("") + '</div>';
+}
+
+
+/* ---------- login ---------- */
+function vLogin(){
+  const sent = S.loginSent;
+  return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button></div></header><main><div class="wrap"><section class="sheet login-box">' +
+    (sent ? '<h1>Check your email</h1><p class="muted">We sent a sign-in link to <b>' + esc(sent) + '</b>. Open it on this device to start studying. It can take a minute to arrive, so check your spam folder too.</p><button class="btn ghost" data-act="login-again" style="align-self:flex-start">Use a different email</button>'
+    : '<h1>Sign in to Exam Ready</h1><p class="muted">Enter your email and we’ll send you a sign-in link. No password needed. Your study sets save to your account, so they’re on every device.</p>' + errBox() +
+      '<form id="login-form" class="stack"><label class="field"><span>Email</span><input type="text" inputmode="email" autocomplete="email" id="login-email" placeholder="you@student.edu.au" required></label><button class="btn primary big" type="submit"' + (S.loginBusy ? " disabled" : "") + '>' + (S.loginBusy ? "Sending…" : "Email me a sign-in link") + '</button></form>') +
+    '</section></div></main>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  if (!S.loaded) return;
+  const root = $("#root");
+  if (S.view === "landing"){ root.innerHTML = vLanding(); return; }
+  if (S.view === "login"){ root.innerHTML = vLogin(); return; }
+  const views = { dashboard: vDashboard, library: vLibrary, newset: vNewSet, set: vSet, study: vStudy, exam: vExam, marking: vMarking, result: vResult, progress: vProgress };
+  root.innerHTML = shell((views[S.view] || vDashboard)());
+  if (S.view === "exam") tick();
+}
+
+/* ---------- events ---------- */
+const curQ = () => S.exams[S.run.id].questions[S.run.idx];
+function updateExamChrome(){
+  const ex = S.exams[S.run.id];
+  document.querySelectorAll(".qnav button").forEach((btn, i) => btn.classList.toggle("answered", isAnswered(ex.questions[i])));
+}
+function leaveGuard(){ if (S.view === "exam"){ S.confirm = "quit"; render(); return true; } if (S.view === "study") { logMinutes((Date.now() - S.session.started) / 60000); S.session = null; } return false; }
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const act = b.dataset.act, sid = b.dataset.sid;
+  if (b.tagName === "INPUT" && act !== "choose") return;
+  if (act !== "quit-exam" && S.confirm === "quit") S.confirm = null;
+  switch (act){
+    case "landing": if (leaveGuard()) return; S.view = "landing"; render(); window.scrollTo(0,0); break;
+    case "enter": enterApp("dashboard"); break;
+    case "go": if (leaveGuard()) return; enterApp(b.dataset.view); break;
+    case "new-set": if (leaveGuard()) return; S.draft.pendingFiles = null; enterApp("newset"); break;
+    case "example": loadExample(); break;
+    case "open-set": if (leaveGuard()) return; enterApp("set", sid); break;
+    case "tool": if (leaveGuard()) return; S.subjectId = sid || S.subjectId; S.tool = b.dataset.tool; S.view = "set"; S.error = null; S.confirm = null; render(); if (S.tool === "tutor") scrollChat(); break;
+    case "clear-err": S.error = null; render(); break;
+    case "stop": if (S.busy && S.busy.ctl) S.busy.ctl.abort(); break;
+    case "confirm-cancel": S.confirm = null; render(); break;
+    case "ffilter": S.folderFilter = b.dataset.f; S.confirm = null; render(); break;
+    case "nf-color": S.draft.newFolderColor = +b.dataset.i; { const nm = $("#nf-name") && $("#nf-name").value; render(); const det = document.querySelector("#new-folder"); if (det) { det.closest("details").open = true; $("#nf-name").value = nm || ""; } } break;
+    case "del-folder": S.confirm = "del-folder"; render(); break;
+    case "del-folder-yes": { const fid = S.folderFilter; S.profile.folders = (S.profile.folders || []).filter(f => f.id !== fid); Object.values(S.subjects).forEach(s => { if (s.folder === fid){ s.folder = null; saveSubject(s); } }); saveProfile(); S.folderFilter = "all"; S.confirm = null; render(); break; }
+    case "del-set": S.confirm = "del-set"; render(); break;
+    case "del-set-yes": {
+      const s = S.subjects[S.subjectId];
+      sourcesOf(s).forEach(x => { delete S.sources[x.id]; store.del("src_" + x.id); });
+      subjectExams(s.id).forEach(x => { delete S.exams[x.id]; store.del("exam_" + x.id); });
+      delete S.subjects[s.id]; store.del("subj_" + s.id); S.confirm = null; S.subjectId = null; S.view = "library"; render(); toast("Study set deleted"); break; }
+    case "src-type": S.draft.srcType = b.dataset.type; { const keep = captureNewSet(); render(); restoreNewSet(keep); } break;
+    case "paste-add": { const t = $("#paste-text").value.trim(); if (!t){ toast("Paste some text first"); return; } newSource(S.subjects[S.subjectId], S.draft.srcType, $("#paste-title").value.trim() || "Pasted notes", t); render(); toast("Text added"); break; }
+    case "del-src": S.confirm = "src-" + b.dataset.id; render(); break;
+    case "del-src-yes": delete S.sources[b.dataset.id]; store.del("src_" + b.dataset.id); S.confirm = null; render(); break;
+    case "make-all": makeEverything(S.subjects[sid]); break;
+    case "gen-notes": generateNotes(S.subjects[sid], false); break;
+    case "cards-n": S.draft.cardsN = +b.dataset.n; render(); reopen("Make more"); break;
+    case "cards-mix": S.draft.cardsMix = b.dataset.mix; render(); reopen("Make more"); break;
+    case "gen-cards": generateCards(S.subjects[sid], false).then(ok => { if (ok){ S.tool = "flashcards"; render(); } }); break;
+    case "del-card": { const s = S.subjects[S.subjectId]; s.cards = s.cards.filter(c => c.id !== b.dataset.id); saveSubject(s); render(); break; }
+    case "study-due": { const s = S.subjects[sid]; if ((s.cards || []).some(isDue)) startStudy(sid, { due: true }); else startStudy(sid, null); break; }
+    case "study-all": startStudy(sid, null); break;
+    case "study-topic": startStudy(sid, { topic: b.dataset.topic }); break;
+    case "flip": S.session.flipped = true; render(); break;
+    case "rate": doRate(b.dataset.r); break;
+    case "end-study": endStudy(); break;
+    case "explain": explainCard(); break;
+    case "ex-len": S.draft.examLen = b.dataset.v; render(); break;
+    case "ex-diff": S.draft.examDiff = b.dataset.v; render(); break;
+    case "ex-mode": S.draft.examMode = b.dataset.v; render(); break;
+    case "ex-topic-all": S.draft.examTopics = []; render(); break;
+    case "ex-topic": { const t = b.dataset.topic, a = S.draft.examTopics; S.draft.examTopics = a.includes(t) ? a.filter(x => x !== t) : a.concat(t); render(); break; }
+    case "gen-exam": generateExam(S.subjects[sid], false); break;
+    case "gen-quiz": generateExam(S.subjects[sid], true); break;
+    case "start-exam": startExam(b.dataset.id); break;
+    case "retake": {
+      const old = S.exams[b.dataset.id];
+      const ex = Object.assign(JSON.parse(JSON.stringify(old)), { id: uid(), createdAt: Date.now(), answers: {}, results: {}, submittedAt: null, score: null, topicScores: null, madeCards: [], photoIds: [], title: old.title.replace(/ \(retake\)$/, "") + " (retake)" });
+      S.exams[ex.id] = ex; store.save("exam_" + ex.id, ex); startExam(ex.id); break; }
+    case "view-result": S.resultId = b.dataset.id; S.view = "result"; render(); window.scrollTo(0,0); break;
+    case "mistakes": mistakesToCards(b.dataset.id); break;
+    case "choose": {
+      const q = curQ(), ex = S.exams[S.run.id];
+      S.run.answers[q.id] = Object.assign({}, S.run.answers[q.id], { choice: +b.dataset.i });
+      if (ex.settings.mode === "quiz") render(); else updateExamChrome(); return; }
+    case "q-prev": S.run.idx--; S.run.confirmSubmit = false; render(); break;
+    case "q-next": S.run.idx++; render(); break;
+    case "q-go": S.run.idx = +b.dataset.i; render(); break;
+    case "reveal": S.run.reveal[curQ().id] = true; render(); break;
+    case "photo-del": delete S.run.photos[curQ().id]; render(); break;
+    case "submit": { const ex = S.exams[S.run.id]; if (ex.questions.some(q => !isAnswered(q))){ S.run.confirmSubmit = true; render(); window.scrollTo(0,0); } else submitExam(); break; }
+    case "submit-yes": submitExam(); break;
+    case "submit-no": S.run.confirmSubmit = false; render(); break;
+    case "quit-exam": if (S.confirm === "quit"){ clearInterval(timerId); S.confirm = null; const ex = S.exams[S.run.id]; S.run = null; S.subjectId = ex.subjectId; S.view = "set"; S.tool = ex.kind === "quiz" ? "quiz" : "exams"; render(); } else { S.confirm = "quit"; render(); } break;
+    case "chat-suggest": sendChat(b.dataset.q); break;
+    case "login-again": S.loginSent = null; render(); break;
+    case "signout": sb.auth.signOut().then(() => location.reload()); break;
+    case "chat-clear": { const s = S.subjects[S.subjectId]; s.chat = []; saveSubject(s); render(); break; }
+  }
+});
+function reopen(prefix){ document.querySelectorAll("details").forEach(d => { const sm = d.querySelector("summary"); if (sm && sm.textContent.startsWith(prefix)) d.open = true; }); }
+function captureNewSet(){ if (S.view !== "newset") return null; const g = id => { const el = $(id); return el ? (el.type === "checkbox" ? el.checked : el.value) : null; }; return { name: g("#ns-name"), level: g("#ns-level"), date: g("#ns-date"), folder: g("#ns-folder"), paste: g("#ns-paste"), auto: g("#ns-auto") }; }
+function restoreNewSet(k){ if (!k) return; const s = (id, v) => { const el = $(id); if (el && v != null){ if (el.type === "checkbox") el.checked = v; else el.value = v; } }; s("#ns-name", k.name); s("#ns-level", k.level); s("#ns-date", k.date); s("#ns-folder", k.folder); s("#ns-paste", k.paste); s("#ns-auto", k.auto); }
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "cards-focus") S.draft.cardsFocus = t.value;
+  else if (t.id === "ans-text" && S.run){ const q = curQ(); S.run.answers[q.id] = Object.assign({}, S.run.answers[q.id], { text: t.value }); updateExamChrome(); }
+  else if (t.id === "chat-text"){ t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
+});
+document.addEventListener("change", e => {
+  const t = e.target, s = S.subjects[S.subjectId];
+  if (t.id === "file-in") addFiles(s, Array.from(t.files || []), S.draft.srcType);
+  else if (t.id === "ns-files"){ S.draft.pendingFiles = Array.from(t.files || []); const n = $("#ns-files-n"); if (n) n.textContent = S.draft.pendingFiles.length + " file" + (S.draft.pendingFiles.length === 1 ? "" : "s") + " chosen"; }
+  else if (t.id === "photo-in" && t.files && t.files[0] && S.run){ const f = t.files[0]; if (S.imgLimits && f.size > S.imgLimits.maxInputBytes){ toast("That photo is too large. Try a smaller one."); return; } S.run.photos[curQ().id] = f; render(); }
+  else if (t.id === "ex-predict") S.draft.examPredict = t.checked;
+  else if (t.id === "set-date"){ s.examDate = t.value || null; saveSubject(s); render(); }
+  else if (t.id === "set-name"){ const v = t.value.trim(); if (v){ s.name = v.slice(0, 80); saveSubject(s); render(); } }
+  else if (t.id === "set-folder"){ s.folder = t.value || null; saveSubject(s); render(); reopen("Set details"); }
+  else if (t.id === "set-level"){ s.level = t.value; saveSubject(s); render(); reopen("Set details"); }
+});
+document.addEventListener("submit", async e => {
+  const f = e.target; e.preventDefault();
+  if (f.id === "login-form"){
+    const email = $("#login-email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ S.error = "Enter a valid email address."; render(); return; }
+    S.loginBusy = true; S.error = null; render();
+    try { localStorage.setItem("er_after_login", JSON.stringify(S.afterLogin || {})); } catch(e) {}
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
+    S.loginBusy = false;
+    if (error) S.error = /rate/i.test(error.message) ? "Too many sign-in emails. Wait a minute, then try again." : "Couldn't send the email: " + error.message;
+    else S.loginSent = email;
+    render(); return;
+  }
+  if (f.id === "new-folder"){
+    const name = $("#nf-name").value.trim(); if (!name) return;
+    const folder = { id: uid(), name: name.slice(0, 40), color: S.draft.newFolderColor };
+    S.profile.folders = (S.profile.folders || []).concat(folder); saveProfile(); S.folderFilter = folder.id; render(); toast("Folder added");
+  } else if (f.id === "new-set"){
+    const name = $("#ns-name").value.trim(); if (!name) return;
+    const s = { id: uid(), name: name.slice(0, 80), level: $("#ns-level").value, examDate: $("#ns-date").value || null, folder: ($("#ns-folder") && $("#ns-folder").value) || null, createdAt: Date.now(), topics: [], cards: [] };
+    const paste = $("#ns-paste").value.trim(), auto = $("#ns-auto").checked, files = S.draft.pendingFiles || [];
+    S.subjects[s.id] = s; saveSubject(s);
+    if (paste) newSource(s, S.draft.srcType, "Pasted notes", paste);
+    S.subjectId = s.id; S.view = "set"; S.tool = "overview"; S.draft.pendingFiles = null;
+    if (files.length) await addFiles(s, files, S.draft.srcType); else render();
+    if (auto && sourcesOf(s).length && S.sample) await makeEverything(s);
+    else if (!sourcesOf(s).length){ S.tool = "sources"; render(); }
+  } else if (f.id === "chat-form"){
+    const t = $("#chat-text"); const v = t.value; t.value = ""; sendChat(v);
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.id === "chat-text" && e.key === "Enter" && !e.shiftKey){ e.preventDefault(); $("#chat-form").requestSubmit(); return; }
+  if (S.view !== "study" || !S.session || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  if (e.code === "Space" && !S.session.flipped){ e.preventDefault(); S.session.flipped = true; render(); }
+  else if (S.session.flipped && (e.key === "1" || e.key === "2")) doRate(e.key === "1" ? "again" : "good");
+});
+document.addEventListener("dragover", e => { const d = e.target.closest && e.target.closest("#drop"); if (d){ e.preventDefault(); d.classList.add("over"); } });
+document.addEventListener("dragleave", e => { const d = e.target.closest && e.target.closest("#drop"); if (d) d.classList.remove("over"); });
+document.addEventListener("drop", e => {
+  const d = e.target.closest && e.target.closest("#drop"); if (!d) return; e.preventDefault(); d.classList.remove("over");
+  const files = Array.from(e.dataTransfer.files || []);
+  if (S.view === "newset"){ S.draft.pendingFiles = files; const n = $("#ns-files-n"); if (n) n.textContent = files.length + " file" + (files.length === 1 ? "" : "s") + " chosen"; }
+  else addFiles(S.subjects[S.subjectId], files, S.draft.srcType);
+});
+
+/* ---------- boot ---------- */
+async function loadData(){
+  S.subjects = {}; S.sources = {}; S.exams = {}; S.profile = { activity: {}, folders: [], seenLanding: false };
+  try {
+    for (const { id, data } of await store.loadAll()){
+      if (!data) continue;
+      if (id.startsWith("subj_")) S.subjects[data.id] = data;
+      else if (id.startsWith("src_")) S.sources[data.id] = data;
+      else if (id.startsWith("exam_")) S.exams[data.id] = data;
+      else if (id === "profile") S.profile = Object.assign({ activity: {}, folders: [] }, data);
+    }
+  } catch(e){ S.error = "Couldn't load your saved work. Reload the page to try again."; }
+}
+async function boot(){
+  await store.init();
+  await loadData();
+  S.sample = makeAI();
+  if (S.sample) S.imgLimits = (await S.sample.limits()).images;
+  if (!store.needsLogin() && (Object.keys(S.subjects).length || S.profile.seenLanding)) S.view = "dashboard";
+  if (sb){
+    sb.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session && (!store.user || store.user.id !== session.user.id)){
+        store.user = session.user; await loadData();
+        let after = {}; try { after = JSON.parse(localStorage.getItem("er_after_login") || "{}"); localStorage.removeItem("er_after_login"); } catch(e) {}
+        if (after.example && !Object.keys(S.subjects).length) loadExample();
+        else enterApp(Object.keys(S.subjects).length ? "dashboard" : (after.view || "newset"), after.sid);
+      } else if (event === "SIGNED_OUT"){ store.user = null; S.view = "landing"; render(); }
+    });
+  }
+  S.loaded = true; render();
+}
+boot();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Cloudflare Worker settings for the Exam Ready AI proxy.
+# Deploy with:  npx wrangler deploy   (run inside this worker/ folder)
+name = "exam-ready-ai"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+
+[vars]
+# Your Supabase project (same values as config.js). These are public.
+SUPABASE_URL = "https://YOUR-PROJECT.supabase.co"
+SUPABASE_ANON_KEY = "YOUR-SUPABASE-ANON-KEY"
+# Your GitHub Pages address, so only your site can use this Worker.
+ALLOWED_ORIGINS = "https://YOUR-GITHUB-USERNAME.github.io"
+# Models and limits (optional to change)
+MODEL_DEFAULT = "claude-sonnet-5-5"
+MODEL_COMPLEX = "claude-sonnet-5-5"
+MODEL_QUICK = "claude-haiku-5-5"
+MAX_TOKENS = "16000"
+DAILY_LIMIT = "150"
+
+# The secret API key is NOT stored here. Add it with:
+#   npx wrangler secret put ANTHROPIC_API_KEY
+
+# Optional per-student daily limit. Create a KV namespace, then uncomment:
+# [[kv_namespaces]]
+# binding = "USAGE"
+# id = "YOUR-KV-NAMESPACE-ID"
