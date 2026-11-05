@@ -25,7 +25,7 @@ The API key only ever lives in the Worker as a secret. It is never in the websit
 ### 1. Put the site on GitHub Pages
 1. In this repo on GitHub, open **Settings → Pages**.
 2. Under **Build and deployment**, choose **Deploy from a branch**, branch **main**, folder **/ (root)**, then **Save**.
-3. After a minute your site is live at `https://YOUR-USERNAME.github.io/exam-ready/`.
+3. After a minute, the address appears at the top of **Settings → Pages** (for this repo: `https://goat-ninja-au.github.io/Exam-ready/`).
 
 At this point it runs in demo mode: everything works except AI, and work saves in the browser.
 
