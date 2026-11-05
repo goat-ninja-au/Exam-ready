@@ -75,11 +75,11 @@ p{margin:0}
 .hero h1{font-size:clamp(2.2rem,5.6vw,3.9rem);line-height:1.02;letter-spacing:-.035em}
 .hero p.lede{font-size:1.15rem;color:var(--ink-2);max-width:52ch}
 .hero-cta{display:flex;gap:10px;flex-wrap:wrap}
-.hero-demo{position:relative;min-height:360px}
+.hero-demo{position:relative;min-height:440px}
 .demo-card{position:absolute;background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:0 16px 40px -24px rgba(20,34,58,.45);display:flex;flex-direction:column;gap:10px;width:min(360px,92%)}
 .demo-card.c1{top:0;left:0;transform:rotate(-2.5deg)}
-.demo-card.c2{top:120px;right:0;transform:rotate(2deg)}
-.demo-card.c3{bottom:0;left:8%;transform:rotate(-.5deg)}
+.demo-card.c2{top:190px;right:0;transform:rotate(2deg);width:min(300px,80%)}
+.demo-card.c3{bottom:0;left:4%;transform:rotate(-.5deg);width:min(300px,80%)}
 .features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;padding-block:24px}
 .feature{background:var(--sheet);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:8px}
 .feature .ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-family:var(--f-mono);font-weight:600}
@@ -93,7 +93,7 @@ p{margin:0}
 .compare thead th{border-top:0;background:var(--paper);font-size:.85rem}
 .compare td.y{color:var(--good);font-weight:700} .compare td.n{color:var(--ink-3)}
 .site-foot{border-top:1px solid var(--line);background:var(--sheet);padding-block:24px;color:var(--ink-3);font-size:.85rem}
-@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);padding-block:32px}.hero-demo{min-height:380px}.features,.howto{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){.hero{grid-template-columns:minmax(0,1fr);padding-block:32px}.hero-demo{min-height:460px}.features,.howto{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- app shell ---------- */
 .shell{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100%}
@@ -256,8 +256,8 @@ button.chip{cursor:pointer}
 .opt{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:var(--paper)}
 .opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .opt input{margin-top:4px;accent-color:var(--accent)}
-.opt.correct{border-color:var(--good);background:var(--good-soft)}
-.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.correct,.opt.correct:has(input:checked){border-color:var(--good);background:var(--good-soft)}
+.opt.wrong,.opt.wrong:has(input:checked){border-color:var(--bad);background:var(--bad-soft)}
 .photo-thumb{max-height:120px;border-radius:8px;border:1px solid var(--line)}
 .solution{background:var(--paper);border-left:4px solid var(--mark);border-radius:0 8px 8px 0;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 details>summary{cursor:pointer;font-weight:700;color:var(--accent)}
@@ -827,7 +827,7 @@ function scrollChat(){ const el = $("#chat-end"); if (el) el.scrollIntoView({ bl
 /* ---------- example set ---------- */
 function loadExample(){
   if (store.needsLogin()){ S.afterLogin = { example: true }; S.view = "login"; render(); return; }
-  const s = { id: uid(), name: "Electric Circuits (example)", level: "uni", examDate: new Date(Date.now() + 18 * DAY).toISOString().slice(0, 10), createdAt: Date.now(), example: true, folder: null,
+  const s = { id: uid(), name: "Electric Circuits (demo)", level: "uni", examDate: new Date(Date.now() + 18 * DAY).toISOString().slice(0, 10), createdAt: Date.now(), example: true, folder: null,
     topics: ["Ohm's law and power", "Thevenin and Norton", "RC transients", "Nodal analysis"], cards: [] };
   const C = (type, topic, front, back, steps, box) => ({ id: uid(), type, topic, front, back, steps: steps || [], box: box || 0, due: box ? Date.now() + (box - 2) * DAY : 0, reviews: box ? 2 : 0, createdAt: Date.now() });
   s.cards = [
@@ -851,9 +851,44 @@ function loadExample(){
       { do: "Solve the simultaneous equations.", why: "One equation per unknown node gives a solvable system." }], 0)
   ];
   s.notes = { createdAt: Date.now(), text: "## Thevenin and Norton\nAny linear two-terminal network can be replaced by a **voltage source** \\(V_{th}\\) in series with a **resistance** \\(R_{th}\\).\n- \\(V_{th}\\) is the open-circuit voltage at the terminals.\n- \\(R_{th}\\) is the resistance seen at the terminals with independent sources turned off.\n- Norton form: current source \\(I_N = I_{sc}\\) in parallel with \\(R_N = R_{th}\\).\n## RC transients\nA capacitor's voltage can't change instantly. For a step input:\n\\[v(t) = v(\\infty) + \\left[v(0) - v(\\infty)\\right] e^{-\\frac{t}{\\tau}}\\]\nwith \\(\\tau = R C\\). After \\(5\\tau\\) the circuit has settled.\n## Key formulas\n- \\(P = VI = I^{2} R = \\frac{V^{2}}{R}\\)\n- Maximum power transfer when \\(R_L = R_{th}\\), giving \\(P_{max} = \\frac{V_{th}^{2}}{4 R_{th}}\\)\n## Common mistakes\n- Forgetting to turn off sources before finding \\(R_{th}\\).\n- Using the wrong resistance in \\(\\tau\\): it must be the Thevenin resistance seen by the capacitor." };
+
+  // ----- demo content: a quiz to try, a marked exam and a tutor chat -----
+  const Q = (o) => Object.assign({ rubric: [], options: null, correct: null }, o);
+  const mkEx = (kind, title, minutes, mode, qs, ago) => ({ id: uid(), subjectId: s.id, createdAt: Date.now() - (ago || 0), title, minutes, kind, example: true,
+    settings: { len: kind === "quiz" ? "quiz" : "standard", diff: "exam", mode, predict: true, topics: [] },
+    questions: qs.map((q, i) => Q(Object.assign({ id: "q" + (i + 1) }, q))), answers: {}, results: {}, submittedAt: null });
+  const quiz = mkEx("quiz", "Electric Circuits quick quiz (demo)", 10, "quiz", [
+    { type: "mcq", topic: "RC transients", marks: 1, question: "An RC circuit has \\(R = 2\\,\\text{k}\\Omega\\) and \\(C = 50\\,\\mu\\text{F}\\). What is the time constant \\(\\tau\\)?", options: ["\\(10\\,\\text{ms}\\)", "\\(100\\,\\text{ms}\\)", "\\(25\\,\\text{ms}\\)", "\\(1\\,\\text{s}\\)"], correct: 1, answer: "\\(\\tau = 100\\,\\text{ms}\\)", solution: "1. Use \\(\\tau = RC\\).\n2. \\(\\tau = 2000 \\times 50 \\times 10^{-6} = 0.1\\,\\text{s}\\).\n3. So \\(\\tau = 100\\,\\text{ms}\\)." },
+    { type: "mcq", topic: "Ohm's law and power", marks: 1, question: "A \\(10\\,\\Omega\\) resistor carries \\(3\\,\\text{A}\\). How much power does it absorb?", options: ["\\(30\\,\\text{W}\\)", "\\(90\\,\\text{W}\\)", "\\(3.3\\,\\text{W}\\)", "\\(300\\,\\text{W}\\)"], correct: 1, answer: "\\(90\\,\\text{W}\\)", solution: "1. Use \\(P = I^{2} R\\).\n2. \\(P = 3^{2} \\times 10 = 90\\,\\text{W}\\)." },
+    { type: "mcq", topic: "Thevenin and Norton", marks: 1, question: "When finding \\(R_{th}\\), what do you do with an independent voltage source?", options: ["Replace it with an open circuit", "Replace it with a short circuit", "Leave it in place", "Double its voltage"], correct: 1, answer: "Replace it with a short circuit.", solution: "1. Turning a voltage source off sets its voltage to zero.\n2. A zero-volt source is a wire, so it becomes a short circuit." },
+    { type: "mcq", topic: "Nodal analysis", marks: 1, question: "Three currents leave a node: \\(2\\,\\text{A}\\), \\(-5\\,\\text{A}\\) and \\(I\\). What is \\(I\\)?", options: ["\\(3\\,\\text{A}\\)", "\\(-3\\,\\text{A}\\)", "\\(7\\,\\text{A}\\)", "\\(-7\\,\\text{A}\\)"], correct: 0, answer: "\\(I = 3\\,\\text{A}\\)", solution: "1. KCL: currents leaving a node add to zero.\n2. \\(2 + (-5) + I = 0\\).\n3. \\(I = 3\\,\\text{A}\\)." },
+    { type: "mcq", topic: "RC transients", marks: 1, question: "A capacitor charges from \\(0\\,\\text{V}\\) toward \\(10\\,\\text{V}\\). Roughly what is its voltage after one time constant?", options: ["\\(3.7\\,\\text{V}\\)", "\\(5\\,\\text{V}\\)", "\\(6.3\\,\\text{V}\\)", "\\(9.9\\,\\text{V}\\)"], correct: 2, answer: "About \\(6.3\\,\\text{V}\\)", solution: "1. \\(v(t) = 10\\left(1 - e^{-\\frac{t}{\\tau}}\\right)\\).\n2. At \\(t = \\tau\\): \\(10\\left(1 - e^{-1}\\right) \\approx 6.3\\,\\text{V}\\)." }
+  ]);
+  const exam = mkEx("exam", "Electric Circuits practice exam (demo)", 45, "exam", [
+    { type: "mcq", topic: "Ohm's law and power", marks: 2, question: "A \\(12\\,\\text{V}\\) source drives a \\(4\\,\\Omega\\) load. What power does the load absorb?", options: ["\\(3\\,\\text{W}\\)", "\\(36\\,\\text{W}\\)", "\\(48\\,\\text{W}\\)", "\\(144\\,\\text{W}\\)"], correct: 1, answer: "\\(36\\,\\text{W}\\)", solution: "1. \\(P = \\frac{V^{2}}{R}\\).\n2. \\(P = \\frac{12^{2}}{4} = 36\\,\\text{W}\\)." },
+    { type: "short", topic: "Thevenin and Norton", marks: 6, question: "A \\(24\\,\\text{V}\\) source is in series with \\(6\\,\\Omega\\), and a \\(12\\,\\Omega\\) resistor is connected across terminals A and B. Find \\(V_{th}\\) and \\(R_{th}\\) at A and B.", answer: "\\(V_{th} = 16\\,\\text{V}\\), \\(R_{th} = 4\\,\\Omega\\)", solution: "1. Open circuit: the \\(6\\,\\Omega\\) and \\(12\\,\\Omega\\) form a voltage divider.\n2. \\(V_{th} = 24 \\times \\frac{12}{6 + 12} = 16\\,\\text{V}\\).\n3. Short the source: \\(6\\,\\Omega\\) is in parallel with \\(12\\,\\Omega\\).\n4. \\(R_{th} = \\frac{6 \\times 12}{6 + 12} = 4\\,\\Omega\\).", rubric: [{ point: "Voltage divider set up", marks: 2 }, { point: "Correct \\(V_{th}\\)", marks: 1 }, { point: "Source shorted for \\(R_{th}\\)", marks: 2 }, { point: "Correct \\(R_{th}\\)", marks: 1 }] },
+    { type: "long", topic: "RC transients", marks: 8, question: "A \\(10\\,\\mu\\text{F}\\) capacitor, initially at \\(0\\,\\text{V}\\), charges through \\(R_{th} = 4\\,\\text{k}\\Omega\\) from \\(V_{th} = 16\\,\\text{V}\\). Find \\(\\tau\\), write \\(v(t)\\), and find the voltage at \\(t = 60\\,\\text{ms}\\).", answer: "\\(\\tau = 40\\,\\text{ms}\\), \\(v(t) = 16\\left(1 - e^{-\\frac{t}{0.04}}\\right)\\), \\(v(60\\,\\text{ms}) \\approx 12.4\\,\\text{V}\\)", solution: "1. \\(\\tau = R_{th} C = 4000 \\times 10 \\times 10^{-6} = 0.04\\,\\text{s}\\).\n2. \\(v(0) = 0\\), \\(v(\\infty) = 16\\,\\text{V}\\).\n3. \\(v(t) = 16\\left(1 - e^{-\\frac{t}{0.04}}\\right)\\).\n4. \\(v(0.06) = 16\\left(1 - e^{-1.5}\\right) \\approx 12.4\\,\\text{V}\\).", rubric: [{ point: "Correct \\(\\tau\\)", marks: 2 }, { point: "Initial and final values", marks: 2 }, { point: "Correct \\(v(t)\\)", marks: 2 }, { point: "Correct value at 60 ms", marks: 2 }] },
+    { type: "short", topic: "Nodal analysis", marks: 4, question: "Node \\(V_1\\) connects to a \\(10\\,\\text{V}\\) node through \\(2\\,\\Omega\\), and to ground through \\(2\\,\\Omega\\) and through \\(1\\,\\Omega\\). Find \\(V_1\\).", answer: "\\(V_1 = 2.5\\,\\text{V}\\)", solution: "1. KCL at \\(V_1\\): \\(\\frac{V_1 - 10}{2} + \\frac{V_1}{2} + \\frac{V_1}{1} = 0\\).\n2. Multiply by 2: \\(V_1 - 10 + V_1 + 2V_1 = 0\\).\n3. \\(4V_1 = 10\\), so \\(V_1 = 2.5\\,\\text{V}\\).", rubric: [{ point: "Correct KCL equation", marks: 2 }, { point: "Correct algebra", marks: 1 }, { point: "Correct answer", marks: 1 }] }
+  ], 2 * DAY);
+  exam.answers = { q1: { choice: 1 }, q2: { text: "Vth = 24 x 12/18 = 16 V. Rth = 6 + 12 = 18 ohms" }, q3: { text: "tau = RC = 4000 x 10e-6 = 0.04 s\nv(t) = 16(1 - e^(-t/0.04))\nv(0.06) = 16(1 - e^-1.5) = 12.4 V" }, q4: { text: "(V1-10)/2 + V1/2 + V1 = 0 so V1 = 5 V" } };
+  exam.results = {
+    q1: { awarded: 2, feedback: "Correct." },
+    q2: { awarded: 3, feedback: "Your \\(V_{th}\\) is right. For \\(R_{th}\\) the source is shorted, which puts \\(6\\,\\Omega\\) in **parallel** with \\(12\\,\\Omega\\), not series, giving \\(4\\,\\Omega\\)." },
+    q3: { awarded: 8, feedback: "Excellent. Every step is clear and correct." },
+    q4: { awarded: 2, feedback: "Your KCL equation is right, but the algebra slipped: multiplying by 2 gives \\(4V_1 = 10\\), so \\(V_1 = 2.5\\,\\text{V}\\)." }
+  };
+  exam.submittedAt = Date.now() - 2 * DAY + 50 * 60000; exam.timeTaken = 38 * 60000;
+  exam.total = exam.questions.reduce((a, q) => a + q.marks, 0); exam.score = exam.questions.reduce((a, q) => a + exam.results[q.id].awarded, 0);
+  exam.topicScores = {}; exam.questions.forEach(q => { const t = exam.topicScores[q.topic] || (exam.topicScores[q.topic] = { got: 0, total: 0 }); t.total += q.marks; t.got += exam.results[q.id].awarded; });
+  [quiz, exam].forEach(x => { S.exams[x.id] = x; store.save("exam_" + x.id, x); });
+  s.chat = [
+    { role: "user", content: "Why do we short voltage sources when finding Rth?" },
+    { role: "assistant", content: "Good question. \\(R_{th}\\) is the resistance the circuit has **on its own**, without any source pushing current.\n\n1. Turning a voltage source off means setting its voltage to \\(0\\,\\text{V}\\).\n2. A source with \\(0\\,\\text{V}\\) across it, whatever the current, behaves exactly like a wire.\n3. So you replace it with a short circuit, then combine the resistors you're left with.\n\nCurrent sources are the opposite: \\(0\\,\\text{A}\\) means no current can flow, so they become an **open** circuit." }
+  ];
+  if (!S.profile.activity || !Object.keys(S.profile.activity).length){ const a = {}; [26,0,34,41,0,22,48,0,15,38,52,0,29,45,61,0,0,35,40,0,55,30,44,0,25,50,0].forEach((m, i) => { if (m){ const d = new Date(Date.now() - (27 - i) * DAY); a[dkey(d)] = m; } }); S.profile.activity = a; saveProfile(); }
   S.subjects[s.id] = s; saveSubject(s);
   newSource(s, "notes", "Week 6 lecture notes (example)", "Thevenin's theorem: any linear two-terminal network can be replaced by a voltage source Vth in series with a resistance Rth. Vth is the open-circuit voltage at the terminals. Rth is found by turning off independent sources and finding the resistance seen at the terminals, or as Voc divided by Isc.\nNorton's theorem: the same network can be replaced by a current source In = Isc in parallel with Rn = Rth.\nRC circuits: a capacitor's voltage cannot change instantaneously. For a step input, v(t) = v(inf) + [v(0) - v(inf)] e^(-t/tau), with tau = R C where R is the Thevenin resistance seen by the capacitor. After 5 tau the circuit is considered settled.\nPower: P = V I = I^2 R = V^2 / R. Maximum power transfer occurs when RL = Rth, giving Pmax = Vth^2 / (4 Rth).\nNodal analysis: choose a reference node, write KCL at each non-reference node using Ohm's law for the branch currents, then solve the simultaneous equations. A voltage source between two non-reference nodes forms a supernode.");
-  enterApp("set", s.id); toast("Example study set added");
+  enterApp("set", s.id); toast("Demo study set added. Click around!");
 }
 function enterApp(view, sid){
   if (store.needsLogin()){ S.afterLogin = { view: view || "dashboard", sid }; S.view = "login"; render(); window.scrollTo(0, 0); return; }
@@ -882,7 +917,7 @@ function vLanding(){
     '<div class="demo-card c2"><span class="label">Practice exam · marked</span><div class="row between"><span class="score-big" style="font-size:2.4rem">78%</span><span class="chip good">Grade 6</span></div><p class="small">You lost the most marks on <span class="hl">Thevenin circuits</span>.</p></div>' +
     '<div class="demo-card c3"><div class="row between"><b>Digital Systems</b><span class="chip warn">12 days</span></div><div class="row between small"><span class="muted">Readiness</span><b class="mono">64%</b></div>' + meter(64) + '</div></div>';
   return '<header class="site-top"><div class="wrap"><button class="brand" data-act="landing"><span class="brand-mark">ER</span>Exam Ready</button><nav class="site-links"><a class="btn ghost small" href="#how">How it works</a><a class="btn ghost small" href="#features">Features</a>' + (hasSets ? '<button class="btn small primary" data-act="enter">Open my study sets</button>' : '<button class="btn small primary" data-act="new-set">Start studying</button>') + '</nav></div></header>' +
-    '<main><div class="wrap"><section class="hero"><div class="stack" style="gap:20px"><span class="chip acc" style="align-self:flex-start">For school and uni students</span><h1>Turn your notes into a plan that gets you <span class="hl">exam ready</span>.</h1><p class="lede">Upload your lecture slides, notes or past papers. Exam Ready writes your study notes, flashcards and practice exams, marks your answers, and tells you exactly what to study each day.</p><div class="hero-cta"><button class="btn primary big" data-act="new-set">Create a study set</button><button class="btn big" data-act="example">Try an example</button></div><p class="small muted">Free to try · Works on phone and laptop · Maths shown properly</p></div>' + demo + '</section>' +
+    '<main><div class="wrap"><section class="hero"><div class="stack" style="gap:20px"><span class="chip acc" style="align-self:flex-start">For school and uni students</span><h1>Turn your notes into a plan that gets you <span class="hl">exam ready</span>.</h1><p class="lede">Upload your lecture slides, notes or past papers. Exam Ready writes your study notes, flashcards and practice exams, marks your answers, and tells you exactly what to study each day.</p><div class="hero-cta"><button class="btn primary big" data-act="new-set">Create a study set</button><button class="btn big" data-act="example">Try the demo</button></div><p class="small muted">Free to try · Works on phone and laptop · Maths shown properly</p></div>' + demo + '</section>' +
     '<section class="band" id="how"><h2>How it works</h2><ol class="howto" style="padding:0;margin:0"><li><b>Upload your material</b><span class="muted small">PDF slides, typed notes, photos of textbook pages, past papers or the course outline.</span></li><li><b>Get your study set</b><span class="muted small">Study notes, flashcards with step-by-step method cards, quizzes and practice exams, all from your course.</span></li><li><b>Follow your daily plan</b><span class="muted small">See what to study today, sit marked practice exams, and watch your readiness score climb before exam day.</span></li></ol></section>' +
     '<section class="band" id="features"><h2>Everything you need before an exam</h2><div class="features">' + [
       ["N", "AI study notes", "Clean revision notes with headings, key formulas and common mistakes, written from your own slides."],
@@ -939,7 +974,7 @@ function planFor(){
 function vDashboard(){
   const sets = setsSorted(), now = new Date();
   const head = '<div class="stack" style="gap:4px"><span class="label">' + esc(now.toLocaleDateString(undefined, { weekday:"long", day:"numeric", month:"long" })) + '</span><h1>Today</h1></div>';
-  if (!sets.length) return head + errBox() + '<div class="empty"><h2>Make your first study set</h2><p class="muted" style="max-width:60ch">A study set is one subject or exam. Upload your slides or notes and Exam Ready makes study notes, flashcards, quizzes and practice exams from them. Your daily plan shows up here.</p><div class="row"><button class="btn primary" data-act="new-set">+ New study set</button><button class="btn" data-act="example">Try an example</button></div></div>';
+  if (!sets.length) return head + errBox() + '<div class="empty"><h2>Make your first study set</h2><p class="muted" style="max-width:60ch">A study set is one subject or exam. Upload your slides or notes and Exam Ready makes study notes, flashcards, quizzes and practice exams from them. Your daily plan shows up here.</p><div class="row"><button class="btn primary" data-act="new-set">+ New study set</button><button class="btn" data-act="example">Try the demo</button></div></div>';
   const upcoming = sets.filter(s => s.examDate && daysUntil(s.examDate) >= 0);
   const strip = upcoming.length ? '<div class="strip">' + upcoming.map(s => { const d = daysUntil(s.examDate), r = pct(readiness(s)); return '<button class="exam-tile" data-act="open-set" data-sid="' + s.id + '"><span class="label">Exam · ' + esc(fmtDate(s.examDate)) + '</span><b>' + esc(s.name) + '</b><div class="row between"><span class="days">' + (d === 0 ? "Today" : d + '<span class="small muted" style="font-family:var(--f-body);font-weight:400"> day' + (d === 1 ? "" : "s") + '</span>') + '</span><span class="chip ' + tone(r) + '">' + r + '% ready</span></div>' + meter(r) + '</button>'; }).join("") + '</div>' : "";
   const items = planFor(), totalEst = items.filter(i => !i.done).reduce((a,i) => a + (i.est || 0), 0);
@@ -978,7 +1013,7 @@ function vNewSet(){
     '<label class="drop" id="drop"><b>Upload files</b><span class="small muted">PDF, .txt or .md' + (S.imgLimits ? ", or photos of pages" : "") + '. Drop them here or tap to choose.</span><input type="file" id="ns-files" multiple accept=".pdf,.txt,.md,text/plain,application/pdf' + (S.imgLimits ? "," + S.imgLimits.mediaTypes.join(",") : "") + '"><span class="small" id="ns-files-n">' + (D.pendingFiles ? D.pendingFiles.length + " file" + (D.pendingFiles.length > 1 ? "s" : "") + " chosen" : "") + '</span></label>' +
     '<label class="field"><span>Or paste text</span><textarea id="ns-paste" placeholder="Paste lecture notes, a study guide or a topic list"></textarea></label></div>' +
     '<label class="row small" style="gap:8px"><input type="checkbox" id="ns-auto" checked> <span><b>Make my study notes and flashcards now</b> · takes about a minute</span></label>' +
-    '<div class="row"><button class="btn primary big" type="submit"' + (S.busy ? " disabled" : "") + '>Create study set</button><button class="btn ghost" type="button" data-act="example">Try an example instead</button></div>' + aiOff() + '</form>';
+    '<div class="row"><button class="btn primary big" type="submit"' + (S.busy ? " disabled" : "") + '>Create study set</button><button class="btn ghost" type="button" data-act="example">Try the demo instead</button></div>' + aiOff() + '</form>';
 }
 
 /* ---------- set page ---------- */
@@ -986,7 +1021,7 @@ const TOOLS = [["overview","◫","Overview"],["notes","N","Notes"],["flashcards"
 function vSet(){
   const s = S.subjects[S.subjectId]; if (!s){ S.view = "library"; return vLibrary(); }
   const r = pct(readiness(s)), d = daysUntil(s.examDate), f = folderOf(s);
-  const head = '<div class="set-head"><div class="row between" style="align-items:flex-start"><div class="stack" style="gap:6px;flex:1;min-width:220px"><span class="label"><span class="fdot" style="display:inline-block;background:' + folderColor(f) + ';margin-right:6px;vertical-align:-1px"></span>' + (f ? esc(f.name) + " · " : "") + (s.level === "school" ? "High school" : "University") + (s.example ? " · Example" : "") + '</span><h1>' + esc(s.name) + '</h1>' + (d != null ? '<span class="small muted">Exam ' + esc(fmtDate(s.examDate)) + ' · <b class="' + (d >= 0 && d <= 7 ? "" : "") + '">' + (d < 0 ? "passed" : d === 0 ? "today" : d + " days to go") + '</b></span>' : '<span class="small muted">No exam date yet</span>') + '</div><div class="stack" style="gap:6px;min-width:170px"><span class="label">Readiness</span><span class="ready-big">' + r + '%</span>' + meter(r) + '</div></div>' +
+  const head = '<div class="set-head"><div class="row between" style="align-items:flex-start"><div class="stack" style="gap:6px;flex:1;min-width:220px"><span class="label"><span class="fdot" style="display:inline-block;background:' + folderColor(f) + ';margin-right:6px;vertical-align:-1px"></span>' + (f ? esc(f.name) + " · " : "") + (s.level === "school" ? "High school" : "University") + (s.example ? " · Demo" : "") + '</span><h1>' + esc(s.name) + '</h1>' + (d != null ? '<span class="small muted">Exam ' + esc(fmtDate(s.examDate)) + ' · <b class="' + (d >= 0 && d <= 7 ? "" : "") + '">' + (d < 0 ? "passed" : d === 0 ? "today" : d + " days to go") + '</b></span>' : '<span class="small muted">No exam date yet</span>') + '</div><div class="stack" style="gap:6px;min-width:170px"><span class="label">Readiness</span><span class="ready-big">' + r + '%</span>' + meter(r) + '</div></div>' +
     '<div class="tools" role="tablist">' + TOOLS.map(([k, ic, l]) => '<button role="tab" aria-selected="' + (S.tool === k) + '" data-act="tool" data-tool="' + k + '" data-sid="' + s.id + '"><span class="ic">' + ic + '</span>' + l + '</button>').join("") + '</div></div>';
   const body = ({ overview: tOverview, notes: tNotes, flashcards: tCards, quiz: tQuiz, exams: tExams, tutor: tTutor, sources: tSources })[S.tool] || tOverview;
   return head + errBox() + busyBox() + body(s);
@@ -998,7 +1033,7 @@ function pathStages(s){
   return [
     { name: "Learn", sub: seen + " of " + cards.length + " cards seen", p: seen / n },
     { name: "Practise", sub: prac + " cards remembered", p: prac / n },
-    { name: "Master", sub: mast + " cards mastered", p: mast / n },
+    { name: "Master", sub: mast + (mast === 1 ? " card" : " cards") + " mastered", p: mast / n },
     { name: "Exam ready", sub: best ? "Best exam " + pct(best) + "%" : "No exam sat yet", p: clamp(best / 0.75, 0, 1) }
   ];
 }
