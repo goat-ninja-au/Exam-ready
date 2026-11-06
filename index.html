@@ -1162,7 +1162,8 @@ function pathStages(s){
 function tOverview(s){
   const srcs = sourcesOf(s), cards = s.cards || [], due = cards.filter(isDue).length;
   if (!srcs.length && !cards.length) return '<div class="empty"><h2>Add your material</h2><p class="muted">Upload slides, notes or a past paper to build this study set.</p><button class="btn primary" data-act="tool" data-tool="sources" data-sid="' + s.id + '">Upload files</button></div>';
-  const build = (!cards.length || !s.notes) && srcs.length ? '<section class="sheet" style="border-color:var(--accent)"><h2>Build your study set</h2><p class="muted small">Make study notes and 20 flashcards from your ' + srcs.length + ' file' + (srcs.length > 1 ? "s" : "") + '.</p><button class="btn primary" data-act="make-all" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Make notes and flashcards</button>' + aiOff() + '</section>' : "";
+  const offline = !S.sample && srcs.length && !cards.length ? '<section class="sheet" style="border-color:rgba(251,191,36,.45)"><h2>Your files are saved, but AI isn’t connected yet</h2><p class="muted">' + srcs.length + ' file' + (srcs.length > 1 ? "s are" : " is") + ' in this study set. Making notes, flashcards, quizzes and exams needs this site’s AI to be switched on, which the site owner does once by adding a Claude API key (steps 2–5 in the README on GitHub).</p><p class="small muted">Want to see what it makes? Open the demo study set from the home page.</p><div class="row"><button class="btn" data-act="example">Open the demo</button><button class="btn ghost" data-act="tool" data-tool="sources" data-sid="' + s.id + '">See my files</button></div></section>' : "";
+  const build = !S.sample ? offline : (!cards.length || !s.notes) && srcs.length ? '<section class="sheet" style="border-color:var(--accent)"><h2>Build your study set</h2><p class="muted small">Make study notes and 20 flashcards from your ' + srcs.length + ' file' + (srcs.length > 1 ? "s" : "") + '.</p><button class="btn primary" data-act="make-all" data-sid="' + s.id + '" style="align-self:flex-start"' + (S.busy || !S.sample ? " disabled" : "") + '>Make notes and flashcards</button>' + aiOff() + '</section>' : "";
   const path = '<section class="sheet"><div class="row between"><h2>Path to mastery</h2><span class="small muted">Each stage builds on the one before</span></div><div class="path">' + pathStages(s).map(st => '<div class="stage"><b>' + st.name + '</b><div class="bar"><i style="width:' + pct(st.p) + '%"></i></div><span>' + esc(st.sub) + '</span></div>').join("") + '</div></section>';
   const quick = '<div class="quick">' +
     '<button class="go" data-act="study-due" data-sid="' + s.id + '"' + (cards.length ? "" : " disabled") + '><span class="ic">' + I("F") + '</span><b>Study flashcards</b><span class="small muted">' + due + ' due now</span></button>' +
@@ -1466,6 +1467,7 @@ document.addEventListener("submit", async e => {
     S.subjectId = s.id; S.view = "set"; S.tool = "overview"; S.draft.pendingFiles = null;
     if (files.length) await addFiles(s, files, S.draft.srcType); else render();
     if (auto && sourcesOf(s).length && S.sample) await makeEverything(s);
+    else if (sourcesOf(s).length && !S.sample) toast("Files saved. AI isn't connected yet, so notes and cards can't be made.");
     else if (!sourcesOf(s).length){ S.tool = "sources"; render(); }
   } else if (f.id === "chat-form"){
     const t = $("#chat-text"); const v = t.value; t.value = ""; sendChat(v);
